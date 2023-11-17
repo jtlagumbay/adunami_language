@@ -1,0 +1,2 @@
+sa adm:
+  isuwat::"Hello, world!"::mana
