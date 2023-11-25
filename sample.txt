@@ -1,2 +1,8 @@
-sa adm:
-  isuwat::"Hello, world!"::mana
+kuptan age_nako
+    isuwat name_nako
+isulod siya 
+    ako -1.2 :
+kuptan a ::
+kon age mas_gamay 18 ( hi ) ;
+kondili
+isuwat senior ka
