@@ -1,7 +1,7 @@
 kuptan age_nako
     isuwat name_nako
 isulod siya 
-    ako -1.2 :
+ako -1.2 : 0.8
 kuptan a ::
 kon age mas_gamay 18 ( hi ) ;
 kondili
