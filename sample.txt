@@ -1,8 +1,23 @@
-kuptan age_nako
-    isuwat name_nako
-isulod siya 
-ako -1.2 : 0.8
-kuptan a ::
-kon age mas_gamay 18 ( hi ) ;
-kondili
-isuwat senior ka
+sa adm:
+  kuptan age 
+  kuptan name = "Jhoanna"
+  name = "jade"
+  isulod::age 
+
+  isuwat::"Hi "
+  isuwat::name
+  isuwat::", "
+    
+    ** check age range **
+  kon age mas gamay 18:
+    isuwat::"minor ka. "
+    isuwat::"magdebut naka ig "
+    isuwat::18.0 - age
+    isuwat::" ka tuig"
+    isuwat::mana
+
+  kondili:
+    isuwat::"senior ka."
+    isuwat::mana
+
+  isuwat::"manaaaaa"
