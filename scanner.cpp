@@ -4,7 +4,7 @@
 #include <sstream>
 #include <regex>
 #include <vector>
-
+#include "tokenEnum.cpp"
 using namespace std;
 
 struct Token {
@@ -21,7 +21,10 @@ vector<Token> scan(const string&);
 int main(){
     string file_name = "sample.txt"; // file path of the source code
     ifstream file_reader(file_name);
-
+    TOKEN myToken = PROG_BEGIN;
+    if(myToken == PROG_BEGIN){
+      cout << "heeeeeey"<<myToken<<endl;
+    }
     if (!file_reader.is_open()) {
         cerr << "Error: Unable to open file" << file_name << endl;
         return 1;

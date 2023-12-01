@@ -1,6 +1,6 @@
 #include <iostream>
 
-enum TOKENS {
+enum TOKEN {
     PROG_BEGIN,   
     DECLARE, 
     VAR_NAME, 
@@ -16,5 +16,4 @@ enum TOKENS {
     INTEGER,
     DOUBLE,
     STRING,
-    __cpp_unicode_characters
 };
