@@ -1,0 +1,124 @@
+S 
+    ->  <PROG_BEGIN> <INSTRUCTION> <EOF>
+    ;
+
+PROG_BEGIN 
+    -> sa adm:
+    ;
+
+EOF 
+    -> 
+
+INSTRUCTION 
+    -> <DECLARE> <INSTRUCTION> 
+    | <ASSIGN> <INSTRUCTION> 
+    | <INPUT> <INSTRUCTION> 
+    | <OUTPUT> <INSTRUCTION> 
+    | <IF_BLOCK> <INSTRUCTION>
+    | ""
+    ;
+
+
+
+DECLARE 
+    -> kuptan <ASSIGN> 
+    | kuptan <VAR_NAME>
+    ;
+
+ASSIGN 
+    -> <VAR_NAME> = <STATEMENT>
+    ;
+
+INPUT 
+    -> isulod:: <VAR_NAME>
+    ;
+
+OUTPUT 
+    -> isuwat:: <STATEMENT> <ENDL> 
+    | isuwat:: <STATEMENT>
+    ;
+
+IF_BLOCK 
+    -> <IF> 
+    | <IF> <ELSE>
+    ;
+
+
+
+IF 
+    -> kon <STATEMENT> <LOGICAL_OPERATOR> <STATEMENT>: <IF_STATEMENT>
+    ;
+
+IF_STATEMENT 
+    -> \t<STATEMENT> <IF_STATEMENT> 
+    | ""
+    ;
+
+ELSE 
+    -> kondili: 
+    ;
+
+ELSE_STATEMENT 
+    -> \t<STATEMENT> <ELSE_STATEMENT> 
+    | ""
+    ;
+
+
+
+ENDL 
+    -> ::mana
+    ;
+
+STATEMENT 
+    -> <EXPRESSION> 
+    | <VAR_NAME> 
+    | <VALUE>
+    ;
+
+EXPRESSION 
+    -> <STATEMENT> <ARITHMETIC_OPERATOR> <STATEMENT>
+    ;
+
+
+
+VALUE 
+    -> <INTEGER> 
+    | <DOUBLE> 
+    | <STRING> 
+    | <CHARACTER>
+    ;
+
+LOGICAL_OPERATOR 
+    -> sama 
+    | mas gamay 
+    | mas dako 
+    | labing dako 
+    | labing menos
+    ;
+
+ARITHMETIC_OPERATOR 
+    -> + 
+    | - 
+    | * 
+    | /
+    ;
+
+INTEGER 
+    -> {[0-9]+}
+    ;
+
+DOUBLE 
+    -> {[0-9]+.[0.9]+}
+    ;
+
+STRING 
+    -> {[a-zA-Z0-9.]+}
+    ;
+
+CHARACTER 
+    -> {[a-zA-Z0-9.]}
+    ;
+
+VAR_NAME 
+    -> {[a-zA-Z][a-zA-Z0-9]*(_[a-zA-Z0-9]+)*}
+    ;
