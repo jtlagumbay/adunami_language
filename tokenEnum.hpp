@@ -16,13 +16,18 @@ enum Token {
     INTEGER,
     DOUBLE,
     STRING,
+    CHARACTER,
     COMMENT,
     UNKNOWN,
     END,
     SPACE,
     PUNCTUATION,
-    IN_OUT_OPERATOR
+    IN_OUT_OPERATOR,
+    ASSIGN_OPERATOR,
+    ARITHMETIC_OPERATOR,
+    LOGICAL_OPERATOR
 };
+
 const char* tokenToString(Token t) {
     switch (t) {
         case PROG_BEGIN: return "PROG_BEGIN";
@@ -40,12 +45,16 @@ const char* tokenToString(Token t) {
         case INTEGER: return "INTEGER";
         case DOUBLE: return "DOUBLE";
         case STRING: return "STRING";
+        case CHARACTER: return "CHARACTER";
         case COMMENT: return "COMMENT";
         case UNKNOWN: return "UNKNOWN";
         case END: return "END";
         case SPACE: return "SPACE";
         case PUNCTUATION: return "PUNCTUATION";
         case IN_OUT_OPERATOR: return "IN_OUT_OPERATOR";
+        case ASSIGN_OPERATOR: return "ASSIGN_OPERATOR";
+        case ARITHMETIC_OPERATOR: return "ARITHMETIC_OPERATOR";
+        case LOGICAL_OPERATOR: return "LOGICAL_OPERATOR";
         default: return "tokenToString Error";
     }
 } 

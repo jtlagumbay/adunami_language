@@ -25,13 +25,16 @@ public:
 
 int main() {
     string file_name = "sample.txt"; // file path of the source code
+    
     try {
+
       Scanner m_scanner(file_name);
       vector<TokenInfo> tokens = m_scanner.start();
       // m_scanner.printTokenList();
-      // cout << endl;
+
       Parser m_parser(tokens);
       m_parser.start();
+
     } catch (Error& e) {
         cerr << e << endl;
         e.debug();
@@ -60,6 +63,7 @@ TokenInfo Parser::peekNext(){
   } else {
     return TokenInfo{
         -1,
+        -1,
         UNKNOWN,
         "END OF TOKEN LIST",
         false
@@ -82,16 +86,36 @@ void Parser::expectInstruction(){
       expect(OUTPUT);
       expect(IN_OUT_OPERATOR);
       expectStatement();
-      expectInstruction();
+      break;
+    case INPUT:
+      expect(INPUT);
+      expect(IN_OUT_OPERATOR);
+      expect(VAR_NAME);
+      break;
+    case DECLARE:
+      expect(DECLARE);
+      expect(VAR_NAME);
+      if(!isEnd() and (*curr_token).type == ASSIGN_OPERATOR){
+        expect(ASSIGN_OPERATOR);
+        expectStatement();
+      }
+      break;
+    default:
+      throw Error(
+          SYNTAX,
+          "Unknown instruction on line "+to_string(m_token.line_number)+":"+to_string(m_token.token_number)+". Check Adunami syntax.",
+          "parser.cpp > Parser::expectInstruction()",
+          "Either wala na tarong separate ang tokens, or wala na tarong identify ang tokens.");
   }
+  expectInstruction();
 }
 
 void Parser::expect(Token expected_token){
   if(isEnd()){
     return;
   }
-
   TokenInfo m_token = *curr_token;
+
 
   if(m_token.type!=expected_token){
     string expected_token_string = tokenToString(expected_token);
@@ -109,13 +133,41 @@ void Parser::expect(Token expected_token){
 
 void Parser::expectStatement(){
   if(isEnd()){
-    cout << "here" << endl;
     return;
   }
 
   TokenInfo m_token = *curr_token;
 
-  moveNext();
+  switch (m_token.type)
+  {
+  case VAR_NAME:
+    expect(VAR_NAME);
+    break;
+  case STRING:
+    expect(STRING);
+    break;
+  case CHARACTER:
+    expect(CHARACTER);
+    break;
+  case INTEGER:
+    expect(INTEGER);
+    break;
+  case DOUBLE:
+    expect(DOUBLE);
+    break;
+  default:
+    throw Error(
+      SYNTAX,
+      "Assignment or declaration statement expected. Check adunami syntax.",
+      "parser.cpp > Parser::expectStatement()",
+      "Either wala na tarong separate ang tokens, or wala na tarong identify ang tokens.");
+  }
+
+  if ((*curr_token).type==ARITHMETIC_OPERATOR){
+    expect(ARITHMETIC_OPERATOR);
+    expectStatement();
+  }
+  
 }
 
 bool Parser::isEnd(){

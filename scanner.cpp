@@ -14,6 +14,7 @@ using namespace std;
 
 struct TokenInfo {
   int line_number;
+  int token_number;
   Token type;
   string lexeme;
   bool is_indented;
@@ -93,7 +94,7 @@ vector<TokenInfo> Scanner::start(){
     string line = regex_replace(stream_line, regex("\\*\\*\\s*([^*]+)\\s*\\*\\*"), "");
     // add space to print for easier shit
     line = regex_replace(line, regex("::"), " :: ");
-    line = regex_replace(line, regex("="), " :: ");
+    line = regex_replace(line, regex("="), " = ");
 
     if(line.empty()){
       line_number++;
@@ -107,8 +108,8 @@ vector<TokenInfo> Scanner::start(){
     scanLine(
       line, 
       hasIndentation(stream_line), 
-      line_number);
-    line_number++;
+      line_number++);
+    
   }
 
   if(!program_finished){
@@ -132,6 +133,7 @@ void Scanner::printTokenList(){
 
 void Scanner::scanLine(const string& inputLine, bool hasIndentation, int line_number){
 
+  int token_number = 0;
   string expr;
   Token token;
   stringstream SS(inputLine);
@@ -141,17 +143,18 @@ void Scanner::scanLine(const string& inputLine, bool hasIndentation, int line_nu
         continue;
     }
     token = checkTokenType(expr);
-    string errorMsg = "Unknown token on line " + to_string(line_number);
-    if(token==UNKNOWN){
-      throw Error(
-      SYNTAX,
-      errorMsg,
-      "scanner.cpp > Scanner::scanLine",
-      "User error or Wala na catch ang token properly."
-    );
-    }
+    // string errorMsg = "Unknown token on line " + to_string(line_number);
+    // if(token==UNKNOWN){
+    //   throw Error(
+    //   SYNTAX,
+    //   errorMsg,
+    //   "scanner.cpp > Scanner::scanLine",
+    //   "User error or Wala na catch ang token properly."
+    // );
+    // }
     token_list.push_back(TokenInfo{
       line_number,
+      ++token_number,
       token,
       expr,
       hasIndentation});
@@ -167,34 +170,42 @@ string Scanner::stripWhiteSpace(string input){
 
 
 Token Scanner::checkTokenType(const string& expr) {
-    vector<pair<regex, Token>> regex_patterns = {
-        { regex("^(isuwat)$"), OUTPUT },
-        // { regex("^(sama|mas_dako|mas_gamay|labing_dako|labing_gamay)$"), "logical_ops" },
-        // { regex("^[+\\-*/]$"), "arithmetic_ops" },
-        { regex("^-?[0-9]+$"), INTEGER },
-        { regex("^-?[0-9]+.[0-9]+$"), DOUBLE },
-        { regex("^\".*\"$"), STRING },
-        // { regex("^=$"), "assignment" },
-        // { regex("^sulat$"), "output" },
-        // { regex("^basa$"), "input" },
-        // { regex("^gihimo$"), "loop_start" },
-        // { regex("^bukid$"), "loop_end" },
-        // { regex("^tapos$"), "if_end" },
-        // { regex("^[a-zA-Z0-9.]+$"), "word" },
-        // { regex("^[a-zA-Z0-9.]+$"), "" },
-        // { regex("^[a-zA-Z0-9.]$"), "character" },
-        // { regex("^[a-zA-Z][a-zA-Z0-9]*(_[a-zA-Z0-9]+)*$"), "var_name" },
-        {regex("^(::)$"), IN_OUT_OPERATOR},
-        {regex("^(\\(|\\)|:|::|,|.)$"), PUNCTUATION},
-    };
 
-    for(const auto& pattern : regex_patterns) {
-        if(regex_match(expr, pattern.first)) {
-            return pattern.second;
-        }
+  vector<pair<regex, Token>> regex_patterns = {
+      {regex("^(isuwat)$"), OUTPUT},
+      {regex("^(isulod)$"), INPUT},
+      {regex("^(kuptan)$"), DECLARE},
+      // { regex("^(sama|mas_dako|mas_gamay|labing_dako|labing_gamay)$"), "logical_ops" },
+      // {regex("^[\\+\\-\\*/]$"), ARITHMETIC_OPERATOR},
+      {regex("^-?[0-9]+$"), INTEGER},
+      {regex("^-?[0-9]+.[0-9]+$"), DOUBLE},
+      {regex("^\".*\"$"), STRING},
+      {regex("^(=)$"), ASSIGN_OPERATOR},
+      // {regex("^[a-zA-Z0-9]$"), CHARACTER},
+      // { regex("^sulat$"), "output" },
+      // { regex("^basa$"), "input" },
+      // { regex("^gihimo$"), "loop_start" },
+      // { regex("^bukid$"), "loop_end" },
+      // { regex("^tapos$"), "if_end" },
+      // { regex("^[a-zA-Z0-9.]+$"), "word" },
+      // { regex("^[a-zA-Z0-9.]+$"), "" },
+      {regex("^[a-zA-Z][a-zA-Z0-9]*(_[a-zA-Z0-9]+)*$"), VAR_NAME},
+      {regex("^(::)$"), IN_OUT_OPERATOR},
+      // {regex("^(\\(|\\)|:|::|,|.)$"), PUNCTUATION},
+      {regex("^(\\+|\\-|\\*|/)$"), ARITHMETIC_OPERATOR},
+  };
+
+
+  for (const auto &pattern : regex_patterns)
+  {
+
+    if (regex_match(expr, pattern.first))
+    {
+      return pattern.second;
+    }
     }
 
-    return UNKNOWN;
+  return UNKNOWN;
 }
 
 ostream& operator<<(std::ostream& os, const TokenInfo& tokenInfo) {
@@ -204,63 +215,3 @@ ostream& operator<<(std::ostream& os, const TokenInfo& tokenInfo) {
     os << "Is Indented: " << (tokenInfo.is_indented ? "true" : "false") << "\n";
     return os;
 }
-
-// vector<Token> scan(const string& line) {
-//     vector<Token> tokens;
-
-//     // if (line == "sa adm:") {
-//     //     tokens.push_back(Token{"PROG_BEGIN", "sa adm:"});
-//     //     return tokens;
-//     // }
-
-//     string expr;
-//     Token tokenized;
-//     stringstream SS(line);
-
-//     while (getline(SS, expr, ' ')) {
-
-//         cout << "token: " << expr << endl;
-
-//         if (expr.empty()) {
-//             continue;
-//         }
-
-//         tokenized = checkType(expr);
-
-//         if (tokenized.type != "NO_MATCH") {
-//             tokens.push_back(tokenized);
-//             token_list.push_back(tokenized); // add token to the global list
-//         } else {
-//             // when a token doesn't match any pattern
-//             cerr << "Error: Unrecognized token '" << expr << "'\n";
-//         }
-//     }
-
-//     return tokens;
-// }
-
-// // string getKeyword(string expr){
-// //   string keywords[] = {"kuptan", "kon", "kondili", "isuwat", "isulod"};
-// //   int idx;
-
-// //   for(int i = 0; i < sizeof(keywords); i++) {
-// //       if(expr.find(keywords[i])!= string::npos) { //npos = no position, meaning naay keyword
-// //         return keywords[i];
-// //       }
-// //   }
-
-// //   return "NO_KEYWORD";
-// // }
-
-// // string getOperand(string expr){
-// //   string operands[] = {"::", ":", "+", "-", "*", "/", "="};
-// //   int idx;
-
-// //   for(int i = 0; i < sizeof(operands); i++) {
-// //       if(expr.find(operands[i])!= string::npos) { //npos = no position, meaning naay operand
-// //         return operands[i];
-// //       }
-// //   }
-
-// //   return "NO_OPS";
-// // }
