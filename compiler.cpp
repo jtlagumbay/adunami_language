@@ -1,5 +1,4 @@
 #include <iostream>
-#include "tokenEnum.h"
 #include "scanner.cpp"
 
 using namespace std;
@@ -10,8 +9,8 @@ int main(){
       Scanner mScanner(file_name);
       mScanner.start();
       mScanner.printTokenList();
-    } catch (const std::runtime_error& e) {
-        cerr << "Caught exception: " << e.what() << endl;
+    } catch (const Error& e) {
+        cerr << e << endl;
     }
     return 0; 
 

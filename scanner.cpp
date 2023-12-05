@@ -4,17 +4,19 @@
 #include <sstream>
 #include <regex>
 #include <vector>
-#include "tokenEnum.h"
 #include <algorithm>
 #include <cctype>
+
+#include "tokenEnum.hpp"
+#include "errorHandler.hpp"
 
 using namespace std;
 
 struct TokenInfo {
-  int lineNumber;
+  int line_number;
   Token type;
   string lexeme;
-  bool isIndented;
+  bool is_indented;
 };
 
 class Scanner {
@@ -33,14 +35,17 @@ class Scanner {
     vector<TokenInfo> start();
     void printTokenList();
 };
-//string getOperand(string);
 
 
 Scanner::Scanner(string file_name){
   adm_file = file_name;
   adm_file_reader.open(adm_file);
   if(!adm_file_reader.is_open()){
-    throw runtime_error("Error: Cannot open adm file.");
+    throw Error(
+      INPUT_OUTPUT,
+      "Adm file not found.",
+      DevMsg("scanner.cpp > Scanner::Scanner", "Incorrect file path.")
+    );
   }
 }
 
@@ -74,7 +79,11 @@ vector<TokenInfo> Scanner::start(){
   // Check if adm is started properly
   getline(adm_file_reader, stream_line);
   if(stream_line !="sa adm:"){
-    throw runtime_error("Error: Unrecognized program. Adunami files should start with \'sa adm:\'");
+    throw Error(
+      SYNTAX,
+      "Unrecognized program. Adunami files should start with \'sa adm:\'",
+      DevMsg("scanner.cpp > Scanner::start", "User error or Naputol ang file pag save.")
+    );
   }
 
   while(getline(adm_file_reader, stream_line)){
@@ -84,7 +93,8 @@ vector<TokenInfo> Scanner::start(){
     line = regex_replace(line, regex("::"), " :: ");
     line = regex_replace(line, regex("="), " :: ");
 
-    if(line.empty()==SPACE){
+    if(line.empty()){
+      line_number++;
       continue;
     }
     if(line.find("hmn")!=string::npos) {
@@ -100,7 +110,11 @@ vector<TokenInfo> Scanner::start(){
   }
 
   if(!program_finished){
-    throw runtime_error("Error: Program did not end properly. Check syntax");
+    throw Error(
+      SYNTAX,
+      "Program did not end properly. Adunami files should end with \'hmn\'",
+      DevMsg("scanner.cpp > Scanner::start", "User error or Naputol ang file pag save.")
+    );
   }
 
   return token_list;
@@ -109,7 +123,7 @@ vector<TokenInfo> Scanner::start(){
 
 void Scanner::printTokenList(){
   for (const auto& element : token_list) {
-      cout << element.lineNumber  << " " << tokenToString(element.type) << " " << element.lexeme << endl;
+      cout << element.line_number  << " " << tokenToString(element.type) << " " << element.lexeme << endl;
   }
 }
 
@@ -124,9 +138,13 @@ void Scanner::scanLine(const string& inputLine, bool hasIndentation, int line_nu
         continue;
     }
     token = checkTokenType(expr);
-    
+    string errorMsg = "Unknown token on line " + to_string(line_number);
     if(token==UNKNOWN){
-      throw runtime_error("ERROR: Unknown token on line " + line_number);
+      throw Error(
+      SYNTAX,
+      errorMsg,
+      DevMsg("scanner.cpp > Scanner::scanLine", "User error or Wala na catch ang token properly.")
+    );
     }
     token_list.push_back(TokenInfo{
       line_number,

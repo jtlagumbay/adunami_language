@@ -1,6 +1,6 @@
 #include <iostream>
 
-#include "tokenEnum.cpp"
+#include "tokenEnum.hpp"
 
 using namespace std;
 
