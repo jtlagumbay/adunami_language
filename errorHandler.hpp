@@ -32,26 +32,31 @@ class DevMsg{
     friend ostream &operator<<(ostream &os, const DevMsg &dev){
       os << "\nTrace: " << dev.trace << "\nPossible Cause: " << dev.possible_cause <<"\n";
     };
+    
 };
 
 class Error{
   public:
     ErrorCode error_code;
-    string client_msg;
-    const DevMsg& dev_msg;
+    string client_msg; // Maoy makita sa compiler error 
+    DevMsg dev_msg; // For Dev Debug purposes only
   
     Error(ErrorCode, string,  const DevMsg&);
+    void debug();
     friend ostream &operator<<(ostream &os, const Error &error){
     {
       os << ErrorCodeToString(error.error_code) << " ERROR: " << error.client_msg;
       return os;
-    }
+    };
+    
 }
 };
 
-// void Error::debug() const{
-//   cout << ErrorCodeToString(error_code) << " ERROR: " << dev_msg;
-// }
+void Error::debug() {
+  cout <<endl<< "----------DEBUG MESSAGE----------" << endl;
+  cout << ErrorCodeToString(error_code) << " ERROR" << dev_msg;
+  cout << endl<<"** NOTE: Delete all debug on production **" << endl<<endl;
+}
 
 Error::Error(ErrorCode code, string m_client_msg, const DevMsg& m_dev_msg)
     : error_code(code), client_msg(m_client_msg), dev_msg(m_dev_msg)

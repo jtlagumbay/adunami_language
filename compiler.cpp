@@ -9,8 +9,9 @@ int main(){
       Scanner mScanner(file_name);
       mScanner.start();
       mScanner.printTokenList();
-    } catch (const Error& e) {
+    } catch (Error& e) {
         cerr << e << endl;
+        e.debug();
     }
     return 0; 
 
