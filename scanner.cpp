@@ -192,6 +192,14 @@ Token Scanner::checkTokenType(const string& expr) {
     return UNKNOWN;
 }
 
+ostream& operator<<(std::ostream& os, const TokenInfo& tokenInfo) {
+    os << "Line Number: " << tokenInfo.line_number << "\n";
+    os << "Token Type: " << tokenToString(tokenInfo.type) << "\n"; // Adjust based on your enum or use a switch statement
+    os << "Lexeme: " << tokenInfo.lexeme << "\n";
+    os << "Is Indented: " << (tokenInfo.is_indented ? "true" : "false") << "\n";
+    return os;
+}
+
 // vector<Token> scan(const string& line) {
 //     vector<Token> tokens;
 
