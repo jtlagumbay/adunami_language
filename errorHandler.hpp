@@ -4,8 +4,8 @@ using namespace std;
 // Enum of possible error codes
 enum ErrorCode
 {
-  SYNTAX,       // Not starting with sa adm, or ending with hmn, unindentified token
-  SEMANTIC,     // Misuse of operators
+  SYNTAX,       // Not starting with sa adm, or ending with hmn, unindentified token, Unexpected token
+  SEMANTIC,     // Misuse of operators, 
   TYPE,         // Arithmetic operations on incompatible data types
   REFERENCE,    // Undefined variables,
   RUNTIME,      // Division by zero
@@ -24,24 +24,14 @@ const char* ErrorCodeToString(ErrorCode t) {
     }
 }
 
-class DevMsg{
-  string trace; // What file and function gave the error
-  string possible_cause; 
-  public:
-    DevMsg(string, string);
-    friend ostream &operator<<(ostream &os, const DevMsg &dev){
-      os << "\nTrace: " << dev.trace << "\nPossible Cause: " << dev.possible_cause <<"\n";
-    };
-    
-};
-
 class Error{
   public:
     ErrorCode error_code;
     string client_msg; // Maoy makita sa compiler error 
-    DevMsg dev_msg; // For Dev Debug purposes only
+    string trace; // What file and function gave the error
+    string possible_cause;
   
-    Error(ErrorCode, string,  const DevMsg&);
+    Error(ErrorCode, string,  string, string);
     void debug();
     friend ostream &operator<<(ostream &os, const Error &error){
     {
@@ -54,16 +44,12 @@ class Error{
 
 void Error::debug() {
   cout <<endl<< "----------DEBUG MESSAGE----------" << endl;
-  cout << ErrorCodeToString(error_code) << " ERROR" << dev_msg;
+  cout << ErrorCodeToString(error_code) << " ERROR" << "\nTrace: " << trace << "\nPossible Cause: " << possible_cause <<"\n";
   cout << endl<<"** NOTE: Delete all debug on production **" << endl<<endl;
 }
 
-Error::Error(ErrorCode code, string m_client_msg, const DevMsg& m_dev_msg)
-    : error_code(code), client_msg(m_client_msg), dev_msg(m_dev_msg)
-{
-}
-
-DevMsg::DevMsg(string m_trace, string m_possible_cause){
-  trace = m_trace;
-  possible_cause = m_possible_cause;
+Error::Error(ErrorCode code, string m_client_msg, string m_trace, string m_possible_cause) : 
+  error_code(code), 
+  client_msg(m_client_msg), 
+  trace(m_trace), possible_cause(m_possible_cause){
 }

@@ -20,7 +20,8 @@ enum Token {
     UNKNOWN,
     END,
     SPACE,
-    PUNCTUATION
+    PUNCTUATION,
+    IN_OUT_OPERATOR
 };
 const char* tokenToString(Token t) {
     switch (t) {
@@ -44,6 +45,7 @@ const char* tokenToString(Token t) {
         case END: return "END";
         case SPACE: return "SPACE";
         case PUNCTUATION: return "PUNCTUATION";
+        case IN_OUT_OPERATOR: return "IN_OUT_OPERATOR";
         default: return "tokenToString Error";
     }
 } 

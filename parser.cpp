@@ -8,11 +8,18 @@ using namespace std;
 class Parser{
   vector<TokenInfo> tokens;                 // Tokens from parser
   vector<TokenInfo>::iterator curr_token;   // Current token being investigated
+  vector<TokenInfo>::iterator end_token;   // Current token being investigated
+  
   void moveNext();                              // Move to next token
   TokenInfo peekNext();
+  bool isEnd();
+
+  void expect(Token);
+  void expectStatement();
+  void expectInstruction();
 
 public:
-  Parser(vector<TokenInfo>);
+  Parser(vector<TokenInfo>&);
   void start();
 };
 
@@ -21,20 +28,10 @@ int main() {
     try {
       Scanner m_scanner(file_name);
       vector<TokenInfo> tokens = m_scanner.start();
+      // m_scanner.printTokenList();
+      // cout << endl;
       Parser m_parser(tokens);
-
-      // for (auto it = tokens.begin(); it != tokens.end(); ++it) {
-      //   // Peek at the next element without advancing the iterator
-      //   auto nextIt = next(it);
-        
-      //   // Check if we are not at the end of the vector
-      //   if (nextIt != tokens.end()) {
-      //       cout << "Current: " << *it << ", Next: " << *nextIt << endl;
-      //   } else {
-      //       cout << "Current: " << *it << ", No next element" << endl;
-      //   }
-      // }
-
+      m_parser.start();
     } catch (Error& e) {
         cerr << e << endl;
         e.debug();
@@ -43,14 +40,17 @@ int main() {
 }
 
 
-Parser::Parser(vector<TokenInfo> m_tokens){
+Parser::Parser(vector<TokenInfo>& m_tokens){
   tokens = m_tokens;
   curr_token = m_tokens.begin();
-  cout << *curr_token << endl;
+  end_token = m_tokens.end();
+
 }
 
 void Parser::moveNext(){
-  ++curr_token;
+  if(!isEnd()){
+    curr_token++;
+  }
 }
 
 TokenInfo Parser::peekNext(){
@@ -65,4 +65,59 @@ TokenInfo Parser::peekNext(){
         false
         };
   }
+}
+
+void Parser::start(){
+  expectInstruction();
+}
+
+void Parser::expectInstruction(){
+  if(isEnd()){
+    return;
+  }
+  TokenInfo m_token = *curr_token;
+
+  switch(m_token.type){
+    case OUTPUT:
+      expect(OUTPUT);
+      expect(IN_OUT_OPERATOR);
+      expectStatement();
+      expectInstruction();
+  }
+}
+
+void Parser::expect(Token expected_token){
+  if(isEnd()){
+    return;
+  }
+
+  TokenInfo m_token = *curr_token;
+
+  if(m_token.type!=expected_token){
+    string expected_token_string = tokenToString(expected_token);
+    string error_msg = "Expected " + expected_token_string + " at line " + to_string(m_token.line_number)+".";
+    throw Error(
+      SYNTAX,
+      error_msg,
+      "parser.cpp > Parser::expect(Token expected_token)",
+      "User error or token not scanned properly."
+      );
+  }
+
+  moveNext();
+}
+
+void Parser::expectStatement(){
+  if(isEnd()){
+    cout << "here" << endl;
+    return;
+  }
+
+  TokenInfo m_token = *curr_token;
+
+  moveNext();
+}
+
+bool Parser::isEnd(){
+  return curr_token == end_token;
 }

@@ -44,7 +44,8 @@ Scanner::Scanner(string file_name){
     throw Error(
       INPUT_OUTPUT,
       "Adm file not found.",
-      DevMsg("scanner.cpp > Scanner::Scanner", "Incorrect file path.")
+      "scanner.cpp > Scanner::Scanner",
+      "Incorrect file path."
     );
   }
 }
@@ -82,7 +83,8 @@ vector<TokenInfo> Scanner::start(){
     throw Error(
       SYNTAX,
       "Unrecognized program. Adunami files should start with \'sa adm:\'",
-      DevMsg("scanner.cpp > Scanner::start", "User error or Naputol ang file pag save.")
+      "scanner.cpp > Scanner::start",
+      "User error or Naputol ang file pag save."
     );
   }
 
@@ -113,7 +115,8 @@ vector<TokenInfo> Scanner::start(){
     throw Error(
       SYNTAX,
       "Program did not end properly. Adunami files should end with \'hmn\'",
-      DevMsg("scanner.cpp > Scanner::start", "User error or Naputol ang file pag save.")
+      "scanner.cpp > Scanner::start",
+      "User error or Naputol ang file pag save."
     );
   }
 
@@ -143,7 +146,8 @@ void Scanner::scanLine(const string& inputLine, bool hasIndentation, int line_nu
       throw Error(
       SYNTAX,
       errorMsg,
-      DevMsg("scanner.cpp > Scanner::scanLine", "User error or Wala na catch ang token properly.")
+      "scanner.cpp > Scanner::scanLine",
+      "User error or Wala na catch ang token properly."
     );
     }
     token_list.push_back(TokenInfo{
@@ -180,7 +184,8 @@ Token Scanner::checkTokenType(const string& expr) {
         // { regex("^[a-zA-Z0-9.]+$"), "" },
         // { regex("^[a-zA-Z0-9.]$"), "character" },
         // { regex("^[a-zA-Z][a-zA-Z0-9]*(_[a-zA-Z0-9]+)*$"), "var_name" },
-        {regex("^(\\(|\\)|:|::|,|.)$"), PUNCTUATION}
+        {regex("^(::)$"), IN_OUT_OPERATOR},
+        {regex("^(\\(|\\)|:|::|,|.)$"), PUNCTUATION},
     };
 
     for(const auto& pattern : regex_patterns) {
