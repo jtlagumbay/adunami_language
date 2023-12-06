@@ -6,21 +6,32 @@
 using namespace std;
 
 class Parser{
+  /****** TOKENS AND ITERATOR ********/
   vector<TokenInfo> tokens;                 // Tokens from parser
   vector<TokenInfo>::iterator curr_token;   // Current token being investigated
   vector<TokenInfo>::iterator end_token;   // Current token being investigated
-  
+
+  /****** TOKENS MOVEMENT HELPER ********/
   void moveNext();                              // Move to next token
   TokenInfo peekNext();
   bool isEnd();
 
+  /****** PARSING TOKENS ********/
   void expect(Token);
   void expectStatement();
   void expectInstruction();
 
+  /****** ASM FILE WRITING ******/
+  string file_name;
+  ofstream asm_file_writer;
+  void initAsmFile();
+  void appendData();
+  void appendText();
+
 public:
-  Parser(vector<TokenInfo>&);
+  Parser(vector<TokenInfo>&, string);
   void start();
+  void generateAsm();
 };
 
 int main() {
@@ -32,7 +43,7 @@ int main() {
       vector<TokenInfo> tokens = m_scanner.start();
       // m_scanner.printTokenList();
 
-      Parser m_parser(tokens);
+      Parser m_parser(tokens, file_name);
       m_parser.start();
 
     } catch (Error& e) {
@@ -43,11 +54,35 @@ int main() {
 }
 
 
-Parser::Parser(vector<TokenInfo>& m_tokens){
+Parser::Parser(vector<TokenInfo>& m_tokens, string m_file_name){
   tokens = m_tokens;
   curr_token = m_tokens.begin();
   end_token = m_tokens.end();
+  file_name = m_file_name;
 
+  initAsmFile();
+}
+
+void Parser::initAsmFile(){
+  string asm_file_name;
+
+  istringstream iss(file_name);
+  getline(iss, asm_file_name, '.');
+  asm_file_name.append(".asm");
+
+  asm_file_writer.open(asm_file_name, ios::trunc);
+
+  if(!asm_file_writer.is_open()){
+    throw Error(
+      INPUT_OUTPUT,
+      "Error creating asm file",
+      "parser.cpp > Parser::initAsmFile()",
+      "Pagopen or create sa asm file."
+    );
+  }
+
+  asm_file_writer << ".data\n\n\n\n"
+                  << ".text\n\n\n\n";
 }
 
 void Parser::moveNext(){
@@ -80,7 +115,7 @@ void Parser::expectInstruction(){
     return;
   }
   TokenInfo m_token = *curr_token;
-
+  // cout << m_token << endl;
   switch(m_token.type){
     case OUTPUT:
       expect(OUTPUT);
@@ -172,4 +207,12 @@ void Parser::expectStatement(){
 
 bool Parser::isEnd(){
   return curr_token == end_token;
+}
+
+void Parser::generateAsm(){
+
+}
+
+void Parser::appendData(){
+  
 }
