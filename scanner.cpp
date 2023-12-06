@@ -75,7 +75,7 @@ bool Scanner::hasIndentation(const string& line) {
 
 vector<TokenInfo> Scanner::start(){
   string stream_line;
-  int line_number = 1;
+  int line_number = 2;
   bool program_finished = false;
 
   // Check if adm is started properly
