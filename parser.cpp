@@ -46,7 +46,7 @@ int main() {
 
       Scanner m_scanner(file_name);
       vector<TokenInfo> tokens = m_scanner.start();
-      // m_scanner.printTokenList();
+      m_scanner.printTokenList();
 
       Parser m_parser(tokens, file_name);
       m_parser.start();
@@ -125,6 +125,10 @@ TokenInfo Parser::peekNext(){
 
 void Parser::start(){
   expectInstruction();
+
+  // Assembly exit program syscall
+  appendLoadImmediate(V0, 10);
+  appendSyscall();
 }
 
 void Parser::expectInstruction(){
@@ -137,7 +141,28 @@ void Parser::expectInstruction(){
     case OUTPUT:
       expect(OUTPUT);
       expect(IN_OUT_OPERATOR);
-      expectStatement();
+      if((*curr_token).type==VAR_NAME){
+        expect(VAR_NAME);
+      } else if((*curr_token).type==STRING){
+        TokenInfo string_token = *curr_token;
+
+        expect(STRING);
+
+        string to_print_label = "print_" + to_string(string_token.line_number) + "_" + to_string(string_token.token_number);
+
+        appendData(ASCIIZ, to_print_label, string_token.lexeme);
+        appendLoadAddress(A0, to_print_label);
+        appendLoadImmediate(V0, 4);
+        appendSyscall();
+      } else if((*curr_token).type==INTEGER){
+        expect(INTEGER);
+      } else {
+        Error(
+          SYNTAX,
+          "Expects variable name or value on line "+to_string(m_token.line_number)+":"+to_string(m_token.token_number)+". Check Adunami syntax.",
+          "parser.cpp > Parser::expectInstruction()",
+          "User error or wala na properly identify or separate ang token.");
+      }
       break;
     case INPUT:
       expect(INPUT);
@@ -237,9 +262,8 @@ void Parser::appendData(AsmDataType data_type, string data_name, string data_val
         data_name 
         + ":\t" 
         + asmDataToString(data_type) 
-        + "\t\""
-        + data_value 
-        + "\"";
+        + "\t"
+        + data_value;
   } else {
     to_append += 
         data_name 
