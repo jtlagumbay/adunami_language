@@ -10,6 +10,7 @@ enum ErrorCode
   REFERENCE,    // Undefined variables,
   RUNTIME,      // Division by zero
   INPUT_OUTPUT, // File not found.
+  ASM_GENERATION // Related to asm generation
 };
 
 const char* ErrorCodeToString(ErrorCode t) {

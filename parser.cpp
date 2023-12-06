@@ -2,6 +2,7 @@
 
 #include "tokenEnum.hpp"
 #include "scanner.cpp"
+#include "asmInstructions.cpp"
 
 using namespace std;
 
@@ -22,14 +23,16 @@ class Parser{
   void expectInstruction();
 
   /****** ASM FILE WRITING ******/
-  string file_name;
+  string adm_file_name; // adm_file
+  string asm_file_name;
   ofstream asm_file_writer;
   void initAsmFile();
-  void appendData();
+  void appendData(AsmDataType, string, string);
   void appendText();
 
 public:
   Parser(vector<TokenInfo>&, string);
+  ~Parser();
   void start();
   void generateAsm();
 };
@@ -58,15 +61,20 @@ Parser::Parser(vector<TokenInfo>& m_tokens, string m_file_name){
   tokens = m_tokens;
   curr_token = m_tokens.begin();
   end_token = m_tokens.end();
-  file_name = m_file_name;
+  adm_file_name = m_file_name;
 
   initAsmFile();
 }
 
-void Parser::initAsmFile(){
-  string asm_file_name;
+Parser::~Parser(){
+  if(asm_file_writer.is_open()){
+    asm_file_writer.close();
+  }
+}
 
-  istringstream iss(file_name);
+void Parser::initAsmFile(){
+
+  istringstream iss(adm_file_name);
   getline(iss, asm_file_name, '.');
   asm_file_name.append(".asm");
 
@@ -83,6 +91,7 @@ void Parser::initAsmFile(){
 
   asm_file_writer << ".data\n\n\n\n"
                   << ".text\n\n\n\n";
+  appendData(ASCIIZ, "hello", "hello, world!");
 }
 
 void Parser::moveNext(){
@@ -213,6 +222,41 @@ void Parser::generateAsm(){
 
 }
 
-void Parser::appendData(){
-  
+void Parser::appendData(AsmDataType data_type, string data_name, string data_value){
+  string to_append = 
+      data_name 
+      + ":\t" 
+      + asmDataToString(data_type) 
+      + "\t\""
+      + data_value 
+      + "\"\n";
+  cout << to_append;
+
+  ifstream temp_file_reader(asm_file_name);
+
+  if (!temp_file_reader.is_open()) {
+    throw Error(
+      ASM_GENERATION,
+      "Error generating asm code.",
+      "parser.cpp > Parser::appendData()",
+      "error sa pagcreate og temporary input file");
+  }
+  cout << "here "<<asm_file_name << endl;
+
+  vector<std::string> temp_lines;
+  string temp_curr_line;
+
+  while (getline(temp_file_reader, temp_curr_line)) {
+    cout << "debug: " << temp_curr_line;
+    temp_lines.push_back(temp_curr_line);
+    if(temp_curr_line==".data"){
+      temp_lines.push_back(to_append);
+    }
+  }
+
+  temp_file_reader.close();
+  asm_file_writer.open(asm_file_name, ios::trunc);
+  for (const auto& updatedLine : temp_lines) {
+      asm_file_writer << updatedLine << std::endl;
+  }
 }
