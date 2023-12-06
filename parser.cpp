@@ -40,13 +40,13 @@ public:
 };
 
 int main() {
-    string file_name = "sample.txt"; // file path of the source code
+    string file_name = "sample.adm"; // file path of the source code
     
     try {
 
       Scanner m_scanner(file_name);
       vector<TokenInfo> tokens = m_scanner.start();
-      m_scanner.printTokenList();
+      // m_scanner.printTokenList();
 
       Parser m_parser(tokens, file_name);
       m_parser.start();
@@ -136,7 +136,7 @@ void Parser::expectInstruction(){
     return;
   }
   TokenInfo m_token = *curr_token;
-  // cout << m_token << endl;
+
   switch(m_token.type){
     case OUTPUT:
       expect(OUTPUT);
