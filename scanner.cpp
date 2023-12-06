@@ -28,6 +28,7 @@ class Scanner {
     void scanLine(const string&, bool, int);
     Token checkTokenType(const string&);
     bool hasIndentation(const std::string&);
+    int countDepth(const std::string&);
     string stripWhiteSpace(string);
 
   public:
@@ -71,6 +72,19 @@ bool Scanner::hasIndentation(const string& line) {
   } else {
     return true;
   }
+}
+
+int Scanner::countDepth(const string& line){
+  int space = 0;
+  for (char c : line)
+  {
+    if (!isspace(c)){
+      break;
+    } else if (c == '\t' || c == ' '){
+      space++;
+    }
+  }
+  return space / 2;
 }
 
 vector<TokenInfo> Scanner::start(){
