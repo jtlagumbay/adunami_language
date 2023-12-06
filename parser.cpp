@@ -28,7 +28,9 @@ class Parser{
   ofstream asm_file_writer;
   void initAsmFile();
   void appendData(AsmDataType, string, string);
-  void appendText();
+  void appendLoadAddress(AsmRegisters, string);
+  void appendLoadImmediate(AsmRegisters, int);
+  void appendSyscall();
 
 public:
   Parser(vector<TokenInfo>&, string);
@@ -90,8 +92,14 @@ void Parser::initAsmFile(){
   }
 
   asm_file_writer << ".data\n\n\n\n"
-                  << ".text\n\n\n\n";
-  appendData(ASCIIZ, "hello", "hello, world!");
+                  << ".text\n";
+  // appendData(ASCIIZ, "hello", "Hello madlang people");
+  // appendData(WORD, "size", "10");
+  // appendLoadAddress(A0, "hello");
+  // appendLoadImmediate(V0, 4);
+  // appendSyscall();
+  // appendLoadImmediate(V0, 10);
+  // appendSyscall();
 }
 
 void Parser::moveNext(){
@@ -223,14 +231,25 @@ void Parser::generateAsm(){
 }
 
 void Parser::appendData(AsmDataType data_type, string data_name, string data_value){
-  string to_append = 
-      data_name 
-      + ":\t" 
-      + asmDataToString(data_type) 
-      + "\t\""
-      + data_value 
-      + "\"\n";
-  cout << to_append;
+  string to_append="\t";
+  if(data_type==ASCIIZ){
+    to_append += 
+        data_name 
+        + ":\t" 
+        + asmDataToString(data_type) 
+        + "\t\""
+        + data_value 
+        + "\"";
+  } else {
+    to_append += 
+        data_name 
+        + ":\t" 
+        + asmDataToString(data_type) 
+        + "\t"
+        + data_value;
+  }
+
+  asm_file_writer.close();
 
   ifstream temp_file_reader(asm_file_name);
 
@@ -241,13 +260,11 @@ void Parser::appendData(AsmDataType data_type, string data_name, string data_val
       "parser.cpp > Parser::appendData()",
       "error sa pagcreate og temporary input file");
   }
-  cout << "here "<<asm_file_name << endl;
 
   vector<std::string> temp_lines;
   string temp_curr_line;
 
   while (getline(temp_file_reader, temp_curr_line)) {
-    cout << "debug: " << temp_curr_line;
     temp_lines.push_back(temp_curr_line);
     if(temp_curr_line==".data"){
       temp_lines.push_back(to_append);
@@ -260,3 +277,18 @@ void Parser::appendData(AsmDataType data_type, string data_name, string data_val
       asm_file_writer << updatedLine << std::endl;
   }
 }
+
+void Parser::appendLoadAddress(AsmRegisters reg, string label){
+  asm_file_writer<<"\tla "<<asmRegToString(reg)<<", "<<label<<endl;
+}
+
+void Parser::appendLoadImmediate(AsmRegisters reg, int value){
+  asm_file_writer<<"\tli "<<asmRegToString(reg)<<", "<<value<<endl;
+
+}
+
+void Parser::appendSyscall(){
+  asm_file_writer<<"\tsyscall "<<endl;
+}
+
+
