@@ -142,16 +142,21 @@ void Scanner::scanLine(const string& inputLine, bool hasIndentation, int line_nu
     if (expr.empty()) {
         continue;
     }
+
+    string temp_expr = expr;
+
+    if (expr.front() == '\"') {
+      while (getline(SS, expr, ' ')) {
+        temp_expr += " " + expr;
+        if (expr.back() == '\"') {
+          break;
+        }
+      }
+      expr = temp_expr;
+    } 
+
     token = checkTokenType(expr);
-    // string errorMsg = "Unknown token on line " + to_string(line_number);
-    // if(token==UNKNOWN){
-    //   throw Error(
-    //   SYNTAX,
-    //   errorMsg,
-    //   "scanner.cpp > Scanner::scanLine",
-    //   "User error or Wala na catch ang token properly."
-    // );
-    // }
+
     token_list.push_back(TokenInfo{
       line_number,
       ++token_number,
