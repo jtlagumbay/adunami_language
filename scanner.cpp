@@ -24,8 +24,9 @@ class Scanner {
   private:
     ifstream adm_file_reader;
     string adm_file;
-    vector<TokenInfo> token_list;
-    void scanLine(const string&, bool, int);
+    // vector<TokenInfo> token_list;
+    vector<vector<TokenInfo>> token_list;
+    vector<TokenInfo> scanLine(const string&, bool, int);
     Token checkTokenType(const string&);
     bool hasIndentation(const std::string&);
     int countDepth(const std::string&);
@@ -34,7 +35,7 @@ class Scanner {
   public:
     Scanner(string file_name);
     ~Scanner();
-    vector<TokenInfo> start();
+    vector<vector<TokenInfo>> start();
     void printTokenList();
 };
 
@@ -87,13 +88,17 @@ int Scanner::countDepth(const string& line){
   return space / 2;
 }
 
-vector<TokenInfo> Scanner::start(){
-  string stream_line;
-  int line_number = 2;
+vector<vector<TokenInfo>> Scanner::start(){
+  string stream_line="";
+  int line_number = 1;
   bool program_finished = false;
 
   // Check if adm is started properly
-  getline(adm_file_reader, stream_line);
+  do{
+    getline(adm_file_reader, stream_line);
+    line_number++;
+  } while (stream_line == "");
+
   if(stream_line !="sa adm:"){
     throw Error(
       SYNTAX,
@@ -101,6 +106,18 @@ vector<TokenInfo> Scanner::start(){
       "scanner.cpp > Scanner::start",
       "User error or Naputol ang file pag save."
     );
+  } else {
+    vector<TokenInfo> token_list_this_line;
+    token_list_this_line.push_back(
+      TokenInfo{
+        line_number++,
+        1,
+        PROG_BEGIN,
+        stream_line,
+        hasIndentation(stream_line)
+      }
+    );
+    token_list.push_back(token_list_this_line);
   }
 
   while(getline(adm_file_reader, stream_line)){
@@ -114,39 +131,38 @@ vector<TokenInfo> Scanner::start(){
       line_number++;
       continue;
     }
-    if(line.find("hmn")!=string::npos) {
-      program_finished = true;
-      break;
-    }
-    
-    scanLine(
-      line, 
-      hasIndentation(stream_line), 
-      line_number++);
-    
-  }
 
-  if(!program_finished){
-    throw Error(
-      SYNTAX,
-      "Program did not end properly. Adunami files should end with \'hmn\'",
-      "scanner.cpp > Scanner::start",
-      "User error or Naputol ang file pag save."
+    token_list.push_back(
+      scanLine(
+        line,
+        hasIndentation(stream_line),
+        line_number++
+      )
     );
   }
+
+  // if(!program_finished){
+  //   throw Error(
+  //     SYNTAX,
+  //     "Program did not end properly. Adunami files should end with \'hmn\'",
+  //     "scanner.cpp > Scanner::start",
+  //     "User error or Naputol ang file pag save."
+  //   );
+  // }
 
   return token_list;
 }
 
 
 void Scanner::printTokenList(){
-  for (const auto& element : token_list) {
+  for (const auto& token_per_line : token_list) {
+    for (const auto& element : token_per_line)
       cout << element.line_number  << " " << tokenToString(element.type) << " " << element.lexeme << endl;
   }
 }
 
-void Scanner::scanLine(const string& inputLine, bool hasIndentation, int line_number){
-
+vector<TokenInfo> Scanner::scanLine(const string& inputLine, bool hasIndentation, int line_number){
+  vector<TokenInfo> tokens_this_line;
   int token_number = 0;
   string expr;
   Token token;
@@ -171,14 +187,14 @@ void Scanner::scanLine(const string& inputLine, bool hasIndentation, int line_nu
 
     token = checkTokenType(expr);
 
-    token_list.push_back(TokenInfo{
+    tokens_this_line.push_back(TokenInfo{
       line_number,
       ++token_number,
       token,
       expr,
       hasIndentation});
   }
-    
+  return tokens_this_line;
 }
 
 
@@ -191,6 +207,8 @@ string Scanner::stripWhiteSpace(string input){
 Token Scanner::checkTokenType(const string& expr) {
 
   vector<pair<regex, Token>> regex_patterns = {
+      {regex("^(sa adm:)$"), PROG_BEGIN},
+      {regex("^(hmn)$"), END},
       {regex("^(isuwat)$"), OUTPUT},
       {regex("^(isulod)$"), INPUT},
       {regex("^(kuptan)$"), DECLARE},
@@ -212,6 +230,7 @@ Token Scanner::checkTokenType(const string& expr) {
       {regex("^(::)$"), IN_OUT_OPERATOR},
       // {regex("^(\\(|\\)|:|::|,|.)$"), PUNCTUATION},
       {regex("^(\\+|\\-|\\*|/)$"), ARITHMETIC_OPERATOR},
+
   };
 
 
@@ -229,8 +248,9 @@ Token Scanner::checkTokenType(const string& expr) {
 
 ostream& operator<<(std::ostream& os, const TokenInfo& tokenInfo) {
     os << "Line Number: " << tokenInfo.line_number << "\n";
+    os << "Line Number: " << tokenInfo.token_number << "\n";
     os << "Token Type: " << tokenToString(tokenInfo.type) << "\n"; // Adjust based on your enum or use a switch statement
     os << "Lexeme: " << tokenInfo.lexeme << "\n";
-    os << "Is Indented: " << (tokenInfo.is_indented ? "true" : "false") << "\n";
+    os << "Is Indented: " << (tokenInfo.is_indented ? "true" : "false") << "\n";\
     return os;
 }

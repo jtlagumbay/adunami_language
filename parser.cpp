@@ -8,19 +8,24 @@ using namespace std;
 
 class Parser{
   /****** TOKENS AND ITERATOR ********/
-  vector<TokenInfo> tokens;                 // Tokens from parser
-  vector<TokenInfo>::iterator curr_token;   // Current token being investigated
-  vector<TokenInfo>::iterator end_token;   // Current token being investigated
+  vector<vector<TokenInfo>> tokens;                 // Tokens per line
+  vector<vector<TokenInfo>>::iterator curr_line;   // Current line
+  vector<vector<TokenInfo>>::iterator end_line;   // End of the line
+  vector<TokenInfo>::iterator curr_token;   // Start of token per line
+  vector<TokenInfo>::iterator end_token;   // End of token per line
 
   /****** TOKENS MOVEMENT HELPER ********/
   void moveNext();                              // Move to next token
+  void moveNextLine();                              // Move to next line
   TokenInfo peekNext();
   bool isEnd();
+  bool isEndLine();
 
   /****** PARSING TOKENS ********/
   void expect(Token);
   void expectStatement();
   void expectInstruction();
+  void parseInstruction(vector<TokenInfo>::iterator);
 
   /****** ASM FILE WRITING ******/
   string adm_file_name; // adm_file
@@ -33,7 +38,7 @@ class Parser{
   void appendSyscall();
 
 public:
-  Parser(vector<TokenInfo>&, string);
+  Parser(vector<vector<TokenInfo>>&, string);
   ~Parser();
   void start();
   void generateAsm();
@@ -45,7 +50,7 @@ int main() {
     try {
 
       Scanner m_scanner(file_name);
-      vector<TokenInfo> tokens = m_scanner.start();
+      vector<vector<TokenInfo>> tokens = m_scanner.start();
       // m_scanner.printTokenList();
 
       Parser m_parser(tokens, file_name);
@@ -59,10 +64,19 @@ int main() {
 }
 
 
-Parser::Parser(vector<TokenInfo>& m_tokens, string m_file_name){
+Parser::Parser(vector<vector<TokenInfo>>& m_tokens, string m_file_name){
+
   tokens = m_tokens;
-  curr_token = m_tokens.begin();
-  end_token = m_tokens.end();
+  tokens.erase(
+    remove_if(tokens.begin(), tokens.end(),
+        [](const std::vector<TokenInfo>& innerVec) {
+            return innerVec.empty();
+        }
+    ),
+    tokens.end()
+  );
+  curr_line = tokens.begin();
+  end_line = tokens.end();
   adm_file_name = m_file_name;
 
   initAsmFile();
@@ -93,15 +107,13 @@ void Parser::initAsmFile(){
 
   asm_file_writer << ".data\n\n\n\n"
                   << ".text\n";
-  // appendData(ASCIIZ, "hello", "Hello madlang people");
-  // appendData(WORD, "size", "10");
-  // appendLoadAddress(A0, "hello");
-  // appendLoadImmediate(V0, 4);
-  // appendSyscall();
-  // appendLoadImmediate(V0, 10);
-  // appendSyscall();
 }
 
+void Parser::moveNextLine(){
+  if(!isEndLine()){
+    curr_line++;
+  }
+}
 void Parser::moveNext(){
   if(!isEnd()){
     curr_token++;
@@ -109,35 +121,77 @@ void Parser::moveNext(){
 }
 
 TokenInfo Parser::peekNext(){
-  auto next_token = next(curr_token);
-  if (next_token != tokens.end()){
-    return *next_token;
-  } else {
-    return TokenInfo{
-        -1,
-        -1,
-        UNKNOWN,
-        "END OF TOKEN LIST",
-        false
-        };
-  }
+  // auto next_token = next(curr_token);
+  // if (next_token != tokens.end()){
+  //   return *next_token;
+  // } else {
+  //   return TokenInfo{
+  //       -1,
+  //       -1,
+  //       UNKNOWN,
+  //       "END OF TOKEN LIST",
+  //       false
+  //       };
+  // }
 }
 
 void Parser::start(){
-  expectInstruction();
 
-  // Assembly exit program syscall
+
+  if((*curr_line++)[0].type==PROG_BEGIN){
+    expect(PROG_BEGIN);
+  } else {
+    throw Error(
+      SYNTAX,
+      "Unrecognized program. Adunami files should start with \'sa adm:\'",
+      "parser.cpp > Parser::start",
+      "User error or Wa natarong og save."
+    );
+  }
+  if ((*--end_line)[0].type != END)
+  {
+    throw Error(
+      SYNTAX,
+      "Program did not end properly. Adunami files should end with \'hmn\'",
+      "parser.cpp > Parser::start",
+      "User error or Naputol ang file pag save."
+    );
+  }
+
+  while(curr_line!=end_line && (*curr_line)[0].type!=END){
+    
+    expectInstruction();
+    moveNextLine();
+  }
+
+  if(curr_line!=end_line){
+    throw Error(
+      SYNTAX,
+      "Instructions after hmn. Adunami files should end with \'hmn\'",
+      "parser.cpp > Parser::start",
+      "User error or Naputol ang file pag save."
+    );
+  }
+
+  expect(END);
   appendLoadImmediate(V0, 10);
   appendSyscall();
+ 
+
+
 }
 
 void Parser::expectInstruction(){
-  if(isEnd()){
+
+  if(isEndLine()){
     return;
   }
-  TokenInfo m_token = *curr_token;
-
-  switch(m_token.type){
+  
+  curr_token = (*curr_line).begin();
+  end_token = (*curr_line).end();
+  TokenInfo curr_token_info = *curr_token;
+ 
+  switch(curr_token_info.type){
     case OUTPUT:
       expect(OUTPUT);
       expect(IN_OUT_OPERATOR);
@@ -157,9 +211,9 @@ void Parser::expectInstruction(){
       } else if((*curr_token).type==INTEGER){
         expect(INTEGER);
       } else {
-        Error(
+        throw Error(
           SYNTAX,
-          "Expects variable name or value on line "+to_string(m_token.line_number)+":"+to_string(m_token.token_number)+". Check Adunami syntax.",
+          "Expects variable name or value on or before line "+to_string((*--curr_token).line_number)+":"+to_string((*--curr_token).token_number+1)+". Check Adunami syntax.",
           "parser.cpp > Parser::expectInstruction()",
           "User error or wala na properly identify or separate ang token.");
       }
@@ -177,14 +231,18 @@ void Parser::expectInstruction(){
         expectStatement();
       }
       break;
+    case END:
+      expect(END);
+      return;
     default:
       throw Error(
           SYNTAX,
-          "Unknown instruction on line "+to_string(m_token.line_number)+":"+to_string(m_token.token_number)+". Check Adunami syntax.",
+          "Unknown instruction on line "+to_string((*curr_token).line_number)+":"+to_string((*curr_token).token_number)+". Check Adunami syntax.",
           "parser.cpp > Parser::expectInstruction()",
           "Either wala na tarong separate ang tokens, or wala na tarong identify ang tokens.");
   }
-  expectInstruction();
+  
+  return;
 }
 
 void Parser::expect(Token expected_token){
@@ -192,7 +250,6 @@ void Parser::expect(Token expected_token){
     return;
   }
   TokenInfo m_token = *curr_token;
-
 
   if(m_token.type!=expected_token){
     string expected_token_string = tokenToString(expected_token);
@@ -249,6 +306,9 @@ void Parser::expectStatement(){
 
 bool Parser::isEnd(){
   return curr_token == end_token;
+}
+bool Parser::isEndLine(){
+  return curr_line == end_line;
 }
 
 void Parser::generateAsm(){
