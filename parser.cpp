@@ -159,7 +159,14 @@ void Parser::start(){
   }
 
   while(curr_line!=end_line && (*curr_line)[0].type!=END){
-    
+    if((*curr_line)[0].depth<1){
+      throw Error(
+      SYNTAX,
+      "Expecting indentation on line "+to_string((*curr_line)[0].line_number),
+      "parser.cpp > Parser::start",
+      "User error or Wrong ang count sa depth."
+    );
+    }
     expectInstruction();
     moveNextLine();
   }

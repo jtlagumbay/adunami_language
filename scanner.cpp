@@ -15,9 +15,9 @@ using namespace std;
 struct TokenInfo {
   int line_number;
   int token_number;
+  int depth;
   Token type;
   string lexeme;
-  bool is_indented;
 };
 
 class Scanner {
@@ -26,7 +26,7 @@ class Scanner {
     string adm_file;
     // vector<TokenInfo> token_list;
     vector<vector<TokenInfo>> token_list;
-    vector<TokenInfo> scanLine(const string&, bool, int);
+    vector<TokenInfo> scanLine(const string&, int, int);
     Token checkTokenType(const string&);
     bool hasIndentation(const std::string&);
     int countDepth(const std::string&);
@@ -99,6 +99,7 @@ vector<vector<TokenInfo>> Scanner::start(){
     line_number++;
   } while (stream_line == "");
 
+  // Gilahi ang sa adm kay arun di maapil sa getline na separated by space kay dapat di buwag ang "sa" og "adm" 
   if(stream_line !="sa adm:"){
     throw Error(
       SYNTAX,
@@ -112,9 +113,9 @@ vector<vector<TokenInfo>> Scanner::start(){
       TokenInfo{
         line_number++,
         1,
+        countDepth(stream_line),
         PROG_BEGIN,
-        stream_line,
-        hasIndentation(stream_line)
+        stream_line
       }
     );
     token_list.push_back(token_list_this_line);
@@ -135,20 +136,11 @@ vector<vector<TokenInfo>> Scanner::start(){
     token_list.push_back(
       scanLine(
         line,
-        hasIndentation(stream_line),
+        countDepth(stream_line),
         line_number++
       )
     );
   }
-
-  // if(!program_finished){
-  //   throw Error(
-  //     SYNTAX,
-  //     "Program did not end properly. Adunami files should end with \'hmn\'",
-  //     "scanner.cpp > Scanner::start",
-  //     "User error or Naputol ang file pag save."
-  //   );
-  // }
 
   return token_list;
 }
@@ -161,7 +153,7 @@ void Scanner::printTokenList(){
   }
 }
 
-vector<TokenInfo> Scanner::scanLine(const string& inputLine, bool hasIndentation, int line_number){
+vector<TokenInfo> Scanner::scanLine(const string& inputLine, int depth, int line_number){
   vector<TokenInfo> tokens_this_line;
   int token_number = 0;
   string expr;
@@ -190,9 +182,9 @@ vector<TokenInfo> Scanner::scanLine(const string& inputLine, bool hasIndentation
     tokens_this_line.push_back(TokenInfo{
       line_number,
       ++token_number,
+      depth,
       token,
-      expr,
-      hasIndentation});
+      expr});
   }
   return tokens_this_line;
 }
@@ -248,9 +240,9 @@ Token Scanner::checkTokenType(const string& expr) {
 
 ostream& operator<<(std::ostream& os, const TokenInfo& tokenInfo) {
     os << "Line Number: " << tokenInfo.line_number << "\n";
-    os << "Line Number: " << tokenInfo.token_number << "\n";
+    os << "Token Number: " << tokenInfo.token_number << "\n";
+    os << "Depth: " << tokenInfo.depth << "\n";
     os << "Token Type: " << tokenToString(tokenInfo.type) << "\n"; // Adjust based on your enum or use a switch statement
-    os << "Lexeme: " << tokenInfo.lexeme << "\n";
-    os << "Is Indented: " << (tokenInfo.is_indented ? "true" : "false") << "\n";\
+    os << "Lexeme: " << tokenInfo.lexeme << "\n";\
     return os;
 }
