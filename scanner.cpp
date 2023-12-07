@@ -90,7 +90,7 @@ int Scanner::countDepth(const string& line){
 
 vector<vector<TokenInfo>> Scanner::start(){
   string stream_line="";
-  int line_number = 1;
+  int line_number = 0;
   bool program_finished = false;
 
   // Check if adm is started properly
