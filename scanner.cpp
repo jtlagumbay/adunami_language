@@ -125,8 +125,7 @@ vector<vector<TokenInfo>> Scanner::start(){
     // remove all comments
     string line = regex_replace(stream_line, regex("\\*\\*\\s*([^*]+)\\s*\\*\\*"), "");
     // add space to print for easier shit
-    line = regex_replace(line, regex("::"), " :: ");
-    line = regex_replace(line, regex("="), " = ");
+    line = regex_replace(line, regex("::|=|\\+|\\-|/|\\*"), " $& ");
 
     if(line.empty()){
       line_number++;
@@ -149,7 +148,7 @@ vector<vector<TokenInfo>> Scanner::start(){
 void Scanner::printTokenList(){
   for (const auto& token_per_line : token_list) {
     for (const auto& element : token_per_line)
-      cout << element.line_number  << " " << tokenToString(element.type) << " " << element.lexeme << endl;
+      cout << element.line_number  <<":"<<element.token_number<< " " << tokenToString(element.type) << " " << element.lexeme << endl;
   }
 }
 

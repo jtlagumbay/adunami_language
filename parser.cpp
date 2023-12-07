@@ -51,7 +51,7 @@ int main() {
 
       Scanner m_scanner(file_name);
       vector<vector<TokenInfo>> tokens = m_scanner.start();
-      // m_scanner.printTokenList();
+      m_scanner.printTokenList();
 
       Parser m_parser(tokens, file_name);
       m_parser.start();
@@ -221,7 +221,7 @@ void Parser::expectInstruction(){
         throw Error(
           SYNTAX,
           "Expects variable name or value on or before line "+to_string((*--curr_token).line_number)+":"+to_string((*--curr_token).token_number+1)+". Check Adunami syntax.",
-          "parser.cpp > Parser::expectInstruction()",
+          "parser.cpp > Parser::expectInstruction() > case OUTPUT > else",
           "User error or wala na properly identify or separate ang token.");
       }
       break;
@@ -235,17 +235,36 @@ void Parser::expectInstruction(){
       expect(VAR_NAME);
       if(!isEnd() and (*curr_token).type == ASSIGN_OPERATOR){
         expect(ASSIGN_OPERATOR);
+        if(isEnd()){
+          throw Error(
+            SYNTAX,
+            "Expecting a variable or value on line "+to_string((*curr_token).line_number)+":"+to_string((*--curr_token).token_number+1),
+            "parser.cpp > Parser::expectInstruction() > case DECLARE:",
+            "Either wala na tarong separate ang tokens, or wala na tarong identify ang tokens.");
+        }
         expectStatement();
       }
       break;
     case END:
       expect(END);
       return;
+    case VAR_NAME:
+      expect(VAR_NAME);
+      expect(ASSIGN_OPERATOR);
+      if(isEnd()){
+          throw Error(
+            SYNTAX,
+            "Expecting a variable or value on line "+to_string((*curr_token).line_number)+":"+to_string((*--curr_token).token_number+1),
+            "parser.cpp > Parser::expectInstruction() > case VAR_NAME:",
+            "Either wala na tarong separate ang tokens, or wala na tarong identify ang tokens.");
+        }
+        expectStatement();
+        break;
     default:
       throw Error(
           SYNTAX,
           "Unknown instruction on line "+to_string((*curr_token).line_number)+":"+to_string((*curr_token).token_number)+". Check Adunami syntax.",
-          "parser.cpp > Parser::expectInstruction()",
+          "parser.cpp > Parser::expectInstruction() > default",
           "Either wala na tarong separate ang tokens, or wala na tarong identify ang tokens.");
   }
   
@@ -256,11 +275,10 @@ void Parser::expect(Token expected_token){
   if(isEnd()){
     return;
   }
-  TokenInfo m_token = *curr_token;
 
-  if(m_token.type!=expected_token){
+  if((*curr_token).type!=expected_token){
     string expected_token_string = tokenToString(expected_token);
-    string error_msg = "Expected " + expected_token_string + " at line " + to_string(m_token.line_number)+".";
+    string error_msg = "Expected " + expected_token_string + " at line " + to_string((*curr_token).line_number)+":"+to_string((*--curr_token).token_number+1)+".";
     throw Error(
       SYNTAX,
       error_msg,
@@ -273,9 +291,6 @@ void Parser::expect(Token expected_token){
 }
 
 void Parser::expectStatement(){
-  if(isEnd()){
-    return;
-  }
 
   TokenInfo m_token = *curr_token;
 
@@ -299,13 +314,20 @@ void Parser::expectStatement(){
   default:
     throw Error(
       SYNTAX,
-      "Assignment or declaration statement expected. Check adunami syntax.",
+      "Expecting a variable or value on line "+to_string((*curr_token).line_number)+":"+to_string((*--curr_token).token_number+1),
       "parser.cpp > Parser::expectStatement()",
       "Either wala na tarong separate ang tokens, or wala na tarong identify ang tokens.");
   }
 
   if ((*curr_token).type==ARITHMETIC_OPERATOR){
     expect(ARITHMETIC_OPERATOR);
+    if(isEnd()){
+      throw Error(
+      SYNTAX,
+      "Expecting a variable or value on line "+to_string((*curr_token).line_number)+":"+to_string((*--curr_token).token_number+1),
+      "parser.cpp > Parser::expectStatement() >  if ((*curr_token).type==ARITHMETIC_OPERATOR)",
+      "Either wala na tarong separate ang tokens, or wala na tarong identify ang tokens.");
+    }
     expectStatement();
   }
   
