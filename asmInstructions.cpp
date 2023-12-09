@@ -1,5 +1,6 @@
 #pragma once
-
+#include <iostream>
+using namespace std;
 enum AsmDataType
 {
   WORD,
@@ -43,7 +44,7 @@ enum AsmRegisters
   S4,
   S5,
   S6,
-  S7,
+  S7
 };
 
 string asmRegToString(AsmRegisters t) {
