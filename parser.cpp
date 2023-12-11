@@ -214,6 +214,10 @@ void Parser::expectInstruction(){
         appendSyscall();
       } else if((*curr_token).type==INTEGER){
         expect(INTEGER);
+      } else if((*curr_token).type==DOUBLE){
+        expect(INTEGER);
+      } else if((*curr_token).type==CHARACTER){
+        expect(INTEGER);
       } else {
         throw Error(
           SYNTAX,
@@ -244,6 +248,7 @@ void Parser::expectInstruction(){
       expect(END);
       return;
     case VAR_NAME:
+      // string m_var
       expect(VAR_NAME);
       symbol_table.getSymbol((*--curr_token).lexeme); // gacheck if ni exist ang variable
       curr_token++;
@@ -299,9 +304,16 @@ void Parser::expectStatement(){
   switch (m_token.type)
   {
   case VAR_NAME:
+    {
+      string m_var_name = (*curr_token).lexeme;
+      symbol_table.getSymbol(m_var_name, *curr_token);
+    }
     expect(VAR_NAME);
     break;
   case STRING:
+    // if((*curr_token).){
+      
+    // }
     expect(STRING);
     break;
   case CHARACTER:
