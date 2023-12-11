@@ -1,4 +1,5 @@
 #include <iostream>
+#include <cstdlib>
 
 #include "tokenEnum.hpp"
 #include "scanner.cpp"
@@ -51,22 +52,30 @@ public:
 };
 
 int main() {
-    string file_name = "sample.adm"; // file path of the source code
-    
-    try {
+  string file;
+  cout << "Enter file name (without file extension): ";
+  cin >> file;
 
-      Scanner m_scanner(file_name);
-      vector<vector<TokenInfo>> tokens = m_scanner.start();
-      m_scanner.printTokenList();
+  string file_name = file + ".adm"; // file path of the source code
+  string asmCommand = "java -jar mars.jar " + file + ".asm";
+  
+  try {
 
-      Parser m_parser(tokens, file_name);
-      m_parser.start();
-      m_parser.printSymbolTable();
-    } catch (Error& e) {
-        cerr << e << endl;
-        e.debug();
-    }
-    return 0;
+    Scanner m_scanner(file_name);
+    vector<vector<TokenInfo>> tokens = m_scanner.start();
+    m_scanner.printTokenList(); // comment later on
+
+    Parser m_parser(tokens, file_name);
+    m_parser.start();
+    m_parser.printSymbolTable(); // comment later on
+
+    // run asm
+    int result = system(asmCommand.c_str());
+  } catch (Error& e) {
+      cerr << e << endl;
+      e.debug();
+  }
+  return 0;
 }
 
 
@@ -201,6 +210,7 @@ void Parser::expectInstruction(){
         string m_var_name = (*curr_token).lexeme;
         Symbol m_symbol = symbol_table.getSymbol(m_var_name);
         expect(VAR_NAME);
+
       } else if((*curr_token).type==STRING){
         TokenInfo string_token = *curr_token;
 
@@ -212,8 +222,10 @@ void Parser::expectInstruction(){
         appendLoadAddress(A0, to_print_label);
         appendLoadImmediate(V0, 4);
         appendSyscall();
+
       } else if((*curr_token).type==INTEGER){
         expect(INTEGER);
+
       } else if((*curr_token).type==DOUBLE){
         expect(INTEGER);
       } else if((*curr_token).type==CHARACTER){
