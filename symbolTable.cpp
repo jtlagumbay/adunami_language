@@ -24,7 +24,15 @@ public:
   void addSymbol(Token m_type, string m_var_name, string m_value = "", AsmRegisters m_reg = ZERO);
   void editSymbol(Token m_type, string m_var_name, string m_value, AsmRegisters m_reg = ZERO);
   void printSymbols();
-  Symbol getSymbol(string);
+  Symbol getSymbol(string m_var_name, TokenInfo m_token_info =  
+        TokenInfo{
+          -1,
+          -1,
+          -1,
+          UNKNOWN,
+          ""
+        }
+  );
 };
 
 ostream& operator<<(std::ostream& os, const Symbol& m_symbol) {
@@ -123,15 +131,20 @@ void SymbolTable::editSymbol(Token m_type, string m_var_name, string m_value, As
   }
 }
 
-Symbol SymbolTable::getSymbol(string m_var_name){
+Symbol SymbolTable::getSymbol(string m_var_name, TokenInfo m_token_info){
   auto it = searchSymbol(m_var_name);
   
   if(it!=symbols.end()){
     return *it;
   } else {
+    string msg = "Variable \'" + m_var_name + "\' does not exist.";
+    if(m_token_info.line_number != -1){
+      string check_line = " Check line " + to_string(m_token_info.line_number) + ":" +to_string( m_token_info.token_number) + ".";
+      msg.append (check_line);
+    }
     throw Error(
       SEMANTIC,
-      "Variable \'" + m_var_name + "\' does not exist.",
+      msg,
       "symbolTable.cpp > Symbol SymbolTable::getSymbol > else",
       "User error or wa na store ang symbol before.");
   }

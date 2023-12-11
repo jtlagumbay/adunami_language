@@ -198,6 +198,8 @@ void Parser::expectInstruction(){
       expect(OUTPUT);
       expect(IN_OUT_OPERATOR);
       if((*curr_token).type==VAR_NAME){
+        string m_var_name = (*curr_token).lexeme;
+        Symbol m_symbol = symbol_table.getSymbol(m_var_name);
         expect(VAR_NAME);
       } else if((*curr_token).type==STRING){
         TokenInfo string_token = *curr_token;
@@ -223,6 +225,10 @@ void Parser::expectInstruction(){
     case INPUT:
       expect(INPUT);
       expect(IN_OUT_OPERATOR);
+      {
+        string m_var_name = (*curr_token).lexeme;
+        Symbol m_symbol = symbol_table.getSymbol(m_var_name, *curr_token);
+      }
       expect(VAR_NAME);
       break;
     case DECLARE:
