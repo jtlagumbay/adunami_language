@@ -146,10 +146,12 @@ vector<vector<TokenInfo>> Scanner::start(){
 
 
 void Scanner::printTokenList(){
+  cout << "------ START OF TOKEN LIST ------" << endl;
   for (const auto& token_per_line : token_list) {
     for (const auto& element : token_per_line)
       cout << element.line_number  <<":"<<element.token_number<< " " << tokenToString(element.type) << " " << element.lexeme << endl;
   }
+  cout << "------ END OF TOKEN LIST ------" << endl << endl;
 }
 
 vector<TokenInfo> Scanner::scanLine(const string& inputLine, int depth, int line_number){

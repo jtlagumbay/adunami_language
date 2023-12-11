@@ -33,10 +33,11 @@ ostream& operator<<(std::ostream& os, const Symbol& m_symbol) {
 }
 
 void SymbolTable::printSymbols(){
+  cout << "------ START OF SYMBOL TABLE ------" << endl;
   for (const auto& symbol : symbols){
     cout << symbol <<endl;
   }
-  cout << "------ END OF SYMBOL TABLE ------" << endl;
+  cout << "------ END OF SYMBOL TABLE ------" << endl << endl;
 }
 
 vector<Symbol>::iterator SymbolTable::searchSymbol(string m_var_name){

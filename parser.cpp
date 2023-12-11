@@ -3,6 +3,7 @@
 #include "tokenEnum.hpp"
 #include "scanner.cpp"
 #include "asmInstructions.cpp"
+#include "symbolTable.cpp"
 
 using namespace std;
 
@@ -25,6 +26,7 @@ class Parser{
   void expect(Token);
   void expectStatement();
   void expectInstruction();
+  void expectAssign();
   void parseInstruction(vector<TokenInfo>::iterator);
 
   /****** ASM FILE WRITING ******/
@@ -37,11 +39,15 @@ class Parser{
   void appendLoadImmediate(AsmRegisters, int);
   void appendSyscall();
 
+  /****** SYMBOL TABLE ******/
+  SymbolTable symbol_table;
+
 public:
   Parser(vector<vector<TokenInfo>>&, string);
   ~Parser();
   void start();
   void generateAsm();
+  void printSymbolTable();
 };
 
 int main() {
@@ -55,7 +61,7 @@ int main() {
 
       Parser m_parser(tokens, file_name);
       m_parser.start();
-
+      m_parser.printSymbolTable();
     } catch (Error& e) {
         cerr << e << endl;
         e.debug();
@@ -86,6 +92,10 @@ Parser::~Parser(){
   if(asm_file_writer.is_open()){
     asm_file_writer.close();
   }
+}
+
+void Parser::printSymbolTable(){
+  symbol_table.printSymbols();
 }
 
 void Parser::initAsmFile(){
@@ -233,16 +243,9 @@ void Parser::expectInstruction(){
     case DECLARE:
       expect(DECLARE);
       expect(VAR_NAME);
+      symbol_table.addSymbol(UNKNOWN, (*--curr_token++).lexeme);
       if(!isEnd() and (*curr_token).type == ASSIGN_OPERATOR){
-        expect(ASSIGN_OPERATOR);
-        if(isEnd()){
-          throw Error(
-            SYNTAX,
-            "Expecting a variable or value on line "+to_string((*curr_token).line_number)+":"+to_string((*--curr_token).token_number+1),
-            "parser.cpp > Parser::expectInstruction() > case DECLARE:",
-            "Either wala na tarong separate ang tokens, or wala na tarong identify ang tokens.");
-        }
-        expectStatement();
+        expectAssign();
       }
       break;
     case END:
@@ -250,16 +253,10 @@ void Parser::expectInstruction(){
       return;
     case VAR_NAME:
       expect(VAR_NAME);
-      expect(ASSIGN_OPERATOR);
-      if(isEnd()){
-          throw Error(
-            SYNTAX,
-            "Expecting a variable or value on line "+to_string((*curr_token).line_number)+":"+to_string((*--curr_token).token_number+1),
-            "parser.cpp > Parser::expectInstruction() > case VAR_NAME:",
-            "Either wala na tarong separate ang tokens, or wala na tarong identify ang tokens.");
-        }
-        expectStatement();
-        break;
+      symbol_table.getSymbol((*--curr_token).lexeme); // gacheck if ni exist ang variable
+      curr_token++;
+      expectAssign();
+      break;
     default:
       throw Error(
           SYNTAX,
@@ -269,6 +266,19 @@ void Parser::expectInstruction(){
   }
   
   return;
+}
+
+void Parser::expectAssign(){
+  expect(ASSIGN_OPERATOR);
+  if(isEnd()){
+    throw Error(
+      SYNTAX,
+      "Expecting a variable or value on line "+to_string((*curr_token).line_number)+":"+to_string((*--curr_token).token_number+1),
+      "parser.cpp > Parser::expectInstruction() > expectAssign",
+      "Either wala na tarong separate ang tokens, or wala na tarong identify ang tokens.");
+  }
+  expectStatement();
+      
 }
 
 void Parser::expect(Token expected_token){
