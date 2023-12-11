@@ -130,21 +130,6 @@ void Parser::moveNext(){
   }
 }
 
-TokenInfo Parser::peekNext(){
-  // auto next_token = next(curr_token);
-  // if (next_token != tokens.end()){
-  //   return *next_token;
-  // } else {
-  //   return TokenInfo{
-  //       -1,
-  //       -1,
-  //       UNKNOWN,
-  //       "END OF TOKEN LIST",
-  //       false
-  //       };
-  // }
-}
-
 void Parser::start(){
 
 
@@ -243,7 +228,8 @@ void Parser::expectInstruction(){
     case DECLARE:
       expect(DECLARE);
       expect(VAR_NAME);
-      symbol_table.addSymbol(UNKNOWN, (*--curr_token++).lexeme);
+      symbol_table.addSymbol(UNKNOWN, (*--curr_token).lexeme);
+      curr_token++;
       if(!isEnd() and (*curr_token).type == ASSIGN_OPERATOR){
         expectAssign();
       }
