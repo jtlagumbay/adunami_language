@@ -1,10 +1,13 @@
 sa adm:
-**comment**
-isuwat ::"What"
-isuwat:: "\'s\' poppin "
-isuwat :: "bitch?\n"
-isuwat::"Bitchin huh?"
-kuptan age
-hmn
 
+  **comment**
+  isuwat :: "hey"
+  isuwat:: "\'s\' poppin "
+  isuwat :: "bitch?\n"
+  isulod::age
+  kuptan age
+  kuptan name = "jhoanna"
+  kuptan year = 3
+  kuptan units = 21 - 2
+hmn
 
