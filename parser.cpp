@@ -36,6 +36,7 @@ class Parser{
   ofstream asm_file_writer;
   void initAsmFile();
   void appendData(AsmDataType, string, string);
+  void appendLoadWord(AsmRegisters, string);
   void appendLoadAddress(AsmRegisters, string);
   void appendLoadImmediate(AsmRegisters, int);
   void appendSyscall();
@@ -227,7 +228,16 @@ void Parser::expectInstruction(){
         appendSyscall();
 
       } else if((*curr_token).type==INTEGER){
+        TokenInfo int_token = *curr_token;
+
         expect(INTEGER);
+
+        string int_label = "print_" + to_string(int_token.line_number) + "_" + to_string(int_token.token_number);
+
+        appendData(WORD, int_label, int_token.lexeme);
+        appendLoadWord(A0, int_label);
+        appendLoadImmediate(V0, 1);
+        appendSyscall();
 
       } else if((*curr_token).type==DOUBLE){
         expect(INTEGER);
@@ -430,6 +440,10 @@ void Parser::appendData(AsmDataType data_type, string data_name, string data_val
   for (const auto& updatedLine : temp_lines) {
       asm_file_writer << updatedLine << std::endl;
   }
+}
+
+void Parser::appendLoadWord(AsmRegisters reg, string label){
+  asm_file_writer<<"\tlw "<<asmRegToString(reg)<<", "<<label<<endl;
 }
 
 void Parser::appendLoadAddress(AsmRegisters reg, string label){
