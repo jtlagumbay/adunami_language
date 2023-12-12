@@ -52,9 +52,9 @@ public:
 };
 
 int main() {
-  string file = "sample";
-  // cout << "Enter file name (without file extension): ";
-  // cin >> file;
+  string file;
+  cout << "Enter file name (without file extension): ";
+  cin >> file;
 
 
   string file_name = file + ".adm"; // file path of the source code
@@ -213,6 +213,7 @@ void Parser::expectInstruction(){
         Symbol m_symbol = symbol_table.getSymbol(m_var_name);
         expect(VAR_NAME);
 
+        
       } else if((*curr_token).type==STRING){
         TokenInfo string_token = *curr_token;
 
