@@ -40,6 +40,8 @@ class Parser{
   void appendLoadAddress(AsmRegisters, string);
   void appendLoadImmediate(AsmRegisters, int);
   void appendSyscall();
+  void printInt(TokenInfo, string);
+  void printStr(TokenInfo, string);
 
   /****** SYMBOL TABLE ******/
   SymbolTable symbol_table;
@@ -210,34 +212,30 @@ void Parser::expectInstruction(){
       expect(OUTPUT);
       expect(IN_OUT_OPERATOR);
       if((*curr_token).type==VAR_NAME){
+        TokenInfo token = *curr_token;
         string m_var_name = (*curr_token).lexeme;
         Symbol m_symbol = symbol_table.getSymbol(m_var_name);
         expect(VAR_NAME);
 
+        if(m_symbol.type == INTEGER)
+          printInt(token, m_symbol.value);
+
+        else if(m_symbol.type == STRING)
+          printStr(token, m_symbol.value);
         
       } else if((*curr_token).type==STRING){
         TokenInfo string_token = *curr_token;
 
         expect(STRING);
 
-        string to_print_label = "print_" + to_string(string_token.line_number) + "_" + to_string(string_token.token_number);
-
-        appendData(ASCIIZ, to_print_label, string_token.lexeme);
-        appendLoadAddress(A0, to_print_label);
-        appendLoadImmediate(V0, 4);
-        appendSyscall();
+        printStr(string_token, string_token.lexeme);
 
       } else if((*curr_token).type==INTEGER){
         TokenInfo int_token = *curr_token;
 
         expect(INTEGER);
 
-        string int_label = "print_" + to_string(int_token.line_number) + "_" + to_string(int_token.token_number);
-
-        appendData(WORD, int_label, int_token.lexeme);
-        appendLoadWord(A0, int_label);
-        appendLoadImmediate(V0, 1);
-        appendSyscall();
+        printInt(int_token, int_token.lexeme);
 
       } else if((*curr_token).type==DOUBLE){
         expect(INTEGER);
@@ -460,4 +458,20 @@ void Parser::appendSyscall(){
 
 }
 
+void Parser::printInt(TokenInfo token, string val) {
+  string int_label = "print_" + to_string(token.line_number) + "_" + to_string(token.token_number);
 
+  appendData(WORD, int_label, val);
+  appendLoadWord(A0, int_label);
+  appendLoadImmediate(V0, 1);
+  appendSyscall();
+}
+
+void Parser::printStr(TokenInfo token, string val) {
+  string to_print_label = "print_" + to_string(token.line_number) + "_" + to_string(token.token_number);
+
+  appendData(ASCIIZ, to_print_label, val);
+  appendLoadAddress(A0, to_print_label);
+  appendLoadImmediate(V0, 4);
+  appendSyscall();
+}

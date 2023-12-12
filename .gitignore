@@ -3,3 +3,5 @@
 *~
 .vscode/
 .dist/
+parser.exe
+sample.asm
