@@ -13,12 +13,12 @@ main:
   li $v0, 8             # specify read integer service
   syscall
 
-  # Initialize $s0 to 1 (assume it's a string)
-  li $s0, 1
+  # Initialize $s0 to 0 (assume it's an integer)
+  li $s0, 0
   move $a3, $a0
   j check_type
 
-print_res:
+print_res:              # 1 -> string, 0 -> integer
   addi   $a0, $s0, 0    # load address of print heading
   li   $v0, 1           # specify Print integer service
   syscall               # print heading
@@ -30,18 +30,18 @@ check_type:
 
   # jal print_char
 
-  beq $s1, 10, is_integer     # 32 -> ASCII code for ' '
+  beq $s1, 10, print_res     # 10 -> ASCII code for '\n'
 
   # Check if the first character is a digit
-  blt $s1, 48, print_res      # 48 -> ASCII code for '0'
-  bgt $s1, 57, print_res      # 57 -> ASCII code for '9'
+  blt $s1, 48, is_string      # 48 -> ASCII code for '0'
+  bgt $s1, 57, is_string      # 57 -> ASCII code for '9'
 
   # The first character is a digit so iterate
   addi $a3, $a3, 1
   j check_type
 
-is_integer:
-  li $s0, 0
+is_string:
+  li $s0, 1
   j print_res
 
 print_char:
