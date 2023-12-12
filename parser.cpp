@@ -25,9 +25,9 @@ class Parser{
 
   /****** PARSING TOKENS ********/
   void expect(Token);
-  void expectStatement();
+  void expectStatement(string);
   void expectInstruction();
-  void expectAssign();
+  void expectAssign(string);
   void parseInstruction(vector<TokenInfo>::iterator);
 
   /****** ASM FILE WRITING ******/
@@ -52,9 +52,10 @@ public:
 };
 
 int main() {
-  string file;
-  cout << "Enter file name (without file extension): ";
-  cin >> file;
+  string file = "sample";
+  // cout << "Enter file name (without file extension): ";
+  // cin >> file;
+
 
   string file_name = file + ".adm"; // file path of the source code
   string asmCommand = "java -jar mars.jar " + file + ".asm";
@@ -67,6 +68,7 @@ int main() {
 
     Parser m_parser(tokens, file_name);
     m_parser.start();
+
     m_parser.printSymbolTable(); // comment later on
 
     // run asm
@@ -104,6 +106,7 @@ Parser::~Parser(){
 }
 
 void Parser::printSymbolTable(){
+
   symbol_table.printSymbols();
 }
 
@@ -161,7 +164,6 @@ void Parser::start(){
       "User error or Naputol ang file pag save."
     );
   }
-
   while(curr_line!=end_line && (*curr_line)[0].type!=END){
     if((*curr_line)[0].depth<1){
       throw Error(
@@ -189,7 +191,7 @@ void Parser::start(){
   appendSyscall();
  
 
-
+  return;
 }
 
 void Parser::expectInstruction(){
@@ -246,25 +248,30 @@ void Parser::expectInstruction(){
         Symbol m_symbol = symbol_table.getSymbol(m_var_name, *curr_token);
       }
       expect(VAR_NAME);
+      appendData(SPACE, (*--curr_token).lexeme, "128");
+      curr_token++;
       break;
     case DECLARE:
-      expect(DECLARE);
-      expect(VAR_NAME);
-      symbol_table.addSymbol(UNKNOWN, (*--curr_token).lexeme);
-      curr_token++;
-      if(!isEnd() and (*curr_token).type == ASSIGN_OPERATOR){
-        expectAssign();
+      {
+        expect(DECLARE);
+        string m_var_name = (*curr_token).lexeme;
+        expect(VAR_NAME);
+        symbol_table.addSymbol(UNKNOWN, m_var_name);
+        if(!isEnd() and (*curr_token).type == ASSIGN_OPERATOR){
+          expectAssign(m_var_name);
+        }
       }
       break;
     case END:
       expect(END);
       return;
     case VAR_NAME:
-      // string m_var
-      expect(VAR_NAME);
-      symbol_table.getSymbol((*--curr_token).lexeme); // gacheck if ni exist ang variable
-      curr_token++;
-      expectAssign();
+      {
+        string m_var_name = (*curr_token).lexeme;
+        expect(VAR_NAME);
+        symbol_table.getSymbol(m_var_name); 
+        expectAssign(m_var_name);
+      }
       break;
     default:
       throw Error(
@@ -277,7 +284,7 @@ void Parser::expectInstruction(){
   return;
 }
 
-void Parser::expectAssign(){
+void Parser::expectAssign(string m_var_name){
   expect(ASSIGN_OPERATOR);
   if(isEnd()){
     throw Error(
@@ -286,7 +293,7 @@ void Parser::expectAssign(){
       "parser.cpp > Parser::expectInstruction() > expectAssign",
       "Either wala na tarong separate ang tokens, or wala na tarong identify ang tokens.");
   }
-  expectStatement();
+  expectStatement(m_var_name);
       
 }
 
@@ -309,53 +316,68 @@ void Parser::expect(Token expected_token){
   moveNext();
 }
 
-void Parser::expectStatement(){
+void Parser::expectStatement(string m_var_name){
 
   TokenInfo m_token = *curr_token;
 
-  switch (m_token.type)
-  {
-  case VAR_NAME:
-    {
-      string m_var_name = (*curr_token).lexeme;
-      symbol_table.getSymbol(m_var_name, *curr_token);
-    }
-    expect(VAR_NAME);
-    break;
-  case STRING:
-    // if((*curr_token).){
-      
-    // }
-    expect(STRING);
-    break;
-  case CHARACTER:
-    expect(CHARACTER);
-    break;
-  case INTEGER:
-    expect(INTEGER);
-    break;
-  case DOUBLE:
-    expect(DOUBLE);
-    break;
-  default:
-    throw Error(
-      SYNTAX,
-      "Expecting a variable or value on line "+to_string((*curr_token).line_number)+":"+to_string((*--curr_token).token_number+1),
-      "parser.cpp > Parser::expectStatement()",
-      "Either wala na tarong separate ang tokens, or wala na tarong identify ang tokens.");
+  Symbol m_symbol = symbol_table.getSymbol(m_var_name, *curr_token);
+
+  string m_lexeme = (*curr_token).lexeme;
+ 
+  switch (m_token.type){
+    case VAR_NAME:
+      symbol_table.getSymbol((*curr_token).lexeme, *curr_token);
+      expect(VAR_NAME);
+      break;
+    case STRING:
+      expect(STRING);
+      break;
+    case CHARACTER:
+      expect(CHARACTER);
+      break;
+    case INTEGER:
+      expect(INTEGER);
+      break;
+    case DOUBLE:
+      expect(DOUBLE);
+      break;
+    default:
+      throw Error(
+        SYNTAX,
+        "Expecting a variable or value on line "+to_string((*curr_token).line_number)+":"+to_string((*--curr_token).token_number+1),
+        "parser.cpp > Parser::expectStatement()",
+        "Either wala na tarong separate ang tokens, or wala na tarong identify ang tokens.");
+  }
+
+  if(m_symbol.type == UNKNOWN){ // meaning mao pay pag declare sa variable so ang data type sa variable kay ang data type sa sunod na tokem
+  
+    symbol_table.editSymbol(m_token.type, m_var_name, m_symbol.value + m_lexeme);
+  } else {
+    symbol_table.editSymbol(m_symbol.type, m_var_name, m_symbol.value + m_lexeme);
+  }
+
+  if(isEnd()){
+    return;
   }
 
   if ((*curr_token).type==ARITHMETIC_OPERATOR){
+    string m_operator = (*curr_token).lexeme;
+    Symbol m_symbol = symbol_table.getSymbol(m_var_name, *curr_token);
+
     expect(ARITHMETIC_OPERATOR);
+
+    symbol_table.editSymbol(ARITHMETIC_EXPRESSION, m_var_name, m_symbol.value + m_operator);
+
     if(isEnd()){
       throw Error(
       SYNTAX,
       "Expecting a variable or value on line "+to_string((*curr_token).line_number)+":"+to_string((*--curr_token).token_number+1),
       "parser.cpp > Parser::expectStatement() >  if ((*curr_token).type==ARITHMETIC_OPERATOR)",
       "Either wala na tarong separate ang tokens, or wala na tarong identify ang tokens.");
-    }
-    expectStatement();
+    } 
+    expectStatement(m_var_name);
   }
+
   
 }
 
@@ -372,21 +394,13 @@ void Parser::generateAsm(){
 
 void Parser::appendData(AsmDataType data_type, string data_name, string data_value){
   string to_append="\t";
-  if(data_type==ASCIIZ){
-    to_append += 
-        data_name 
-        + ":\t" 
-        + asmDataToString(data_type) 
-        + "\t"
-        + data_value;
-  } else {
-    to_append += 
-        data_name 
-        + ":\t" 
-        + asmDataToString(data_type) 
-        + "\t"
-        + data_value;
-  }
+
+  to_append += 
+      data_name 
+      + ":\t" 
+      + asmDataToString(data_type) 
+      + "\t"
+      + data_value;
 
   asm_file_writer.close();
 
@@ -427,7 +441,8 @@ void Parser::appendLoadImmediate(AsmRegisters reg, int value){
 }
 
 void Parser::appendSyscall(){
-  asm_file_writer<<"\tsyscall "<<endl;
+  asm_file_writer<<"\tsyscall "<<endl<<endl;
+
 }
 
 

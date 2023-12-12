@@ -5,6 +5,7 @@ enum AsmDataType
 {
   WORD,
   ASCIIZ,
+  SPACE
 };
 
 const char* asmDataToString(AsmDataType t) {
@@ -13,6 +14,8 @@ const char* asmDataToString(AsmDataType t) {
     return ".word";
   case ASCIIZ:
     return ".asciiz";
+  case SPACE:
+    return ".space";
   default:
     return "UNKNOWN DATA TYPE";
   }

@@ -99,7 +99,7 @@ void SymbolTable::editSymbol(Token m_type, string m_var_name, string m_value, As
 {
   auto it = searchSymbol(m_var_name);
 
-  if((m_type == CHARACTER || m_type == INTEGER || m_type == DOUBLE) && m_value==""){
+  if((m_type == CHARACTER || m_type == INTEGER || m_type == DOUBLE || m_type == ARITHMETIC_EXPRESSION || m_type == VAR_NAME) && m_value==""){
     string m_type_str = tokenToString(m_type);
     throw Error(
         SEMANTIC,
@@ -108,11 +108,11 @@ void SymbolTable::editSymbol(Token m_type, string m_var_name, string m_value, As
         "Cannot be user error. Wala na tarong og pasa ang parameter. Ga pasa og data type pero walay value gi pasa.");
   }
 
-  if(!(m_type == CHARACTER || m_type == INTEGER || m_type == DOUBLE || m_type == STRING)){
+  if(!(m_type == CHARACTER || m_type == INTEGER || m_type == DOUBLE || m_type == STRING || m_type == ARITHMETIC_EXPRESSION || m_type == VAR_NAME)){
     throw Error(
         SEMANTIC,
         "Cannot initialize variable \'" + m_var_name + "\'.",
-        "symbolTable.cpp > SymbolTable::addSymbol > if(m_type == UNKNOWN)",
+        "symbolTable.cpp > SymbolTable::editSymbol > if(m_type == UNKNOWN)",
         "Cannot be user error. Wala na tarong og pasa ang parameter. Kung maginitialize, dapat nahibaw-an na ang data type daan.");
   }
 

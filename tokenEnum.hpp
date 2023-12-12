@@ -10,6 +10,7 @@ enum Token {
     IF,
     IF_STATEMENT,
     LOGICAL_EXPRESSION,
+    ARITHMETIC_EXPRESSION,
     ELSE,
     ELSE_STATEMENT,
     ENDL,
@@ -20,7 +21,6 @@ enum Token {
     COMMENT,
     UNKNOWN,
     END,
-    SPACE,
     PUNCTUATION,
     IN_OUT_OPERATOR,
     ASSIGN_OPERATOR,
@@ -39,6 +39,7 @@ const char* tokenToString(Token t) {
         case IF: return "IF";
         case IF_STATEMENT: return "IF_STATEMENT";
         case LOGICAL_EXPRESSION: return "LOGICAL_EXPRESSION";
+        case ARITHMETIC_EXPRESSION: return "ARITHMETIC_EXPRESSION";
         case ELSE: return "ELSE";
         case ELSE_STATEMENT: return "ELSE_STATEMENT";
         case ENDL: return "ENDL";
@@ -49,7 +50,6 @@ const char* tokenToString(Token t) {
         case COMMENT: return "COMMENT";
         case UNKNOWN: return "UNKNOWN";
         case END: return "END";
-        case SPACE: return "SPACE";
         case PUNCTUATION: return "PUNCTUATION";
         case IN_OUT_OPERATOR: return "IN_OUT_OPERATOR";
         case ASSIGN_OPERATOR: return "ASSIGN_OPERATOR";
