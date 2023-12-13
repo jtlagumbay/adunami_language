@@ -168,6 +168,12 @@ vector<TokenInfo> Scanner::scanLine(const string& inputLine, int depth, int line
 
     string temp_expr = expr;
 
+    if (expr == "-" && SS.peek() >= '0' && SS.peek() <= '9') {
+      getline(SS, expr);
+      temp_expr += "" + expr;
+      expr = temp_expr;
+    }
+
     if (expr.front() == '\"') {
       while (getline(SS, expr, ' ')) {
         temp_expr += " " + expr;
