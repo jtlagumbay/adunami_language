@@ -173,9 +173,9 @@ vector<TokenInfo> Scanner::scanLine(const string& inputLine, int depth, int line
         temp_expr += " " + expr;
         if (expr.back() == '\"') {
           break;
-        }
+        }   
       }
-      expr = temp_expr;
+      expr = temp_expr;   
     } 
 
     token = checkTokenType(expr);
@@ -212,11 +212,6 @@ Token Scanner::checkTokenType(const string& expr) {
       {regex("^\".*\"$"), STRING},
       {regex("^(=)$"), ASSIGN_OPERATOR},
       // {regex("^[a-zA-Z0-9]$"), CHARACTER},
-      // { regex("^sulat$"), "output" },
-      // { regex("^basa$"), "input" },
-      // { regex("^gihimo$"), "loop_start" },
-      // { regex("^bukid$"), "loop_end" },
-      // { regex("^tapos$"), "if_end" },
       // { regex("^[a-zA-Z0-9.]+$"), "word" },
       // { regex("^[a-zA-Z0-9.]+$"), "" },
       {regex("^[a-zA-Z][a-zA-Z0-9]*(_[a-zA-Z0-9]+)*$"), VAR_NAME},
