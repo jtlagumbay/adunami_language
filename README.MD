@@ -13,4 +13,4 @@
    ./a
    ```
 4. If it is run successfully, token list and symbol table will be printed. You will also be prompted with the name of .adm file you want to test.
-   [SAMPLE IMAGE](SNAPSHOT.png)
+   ![SAMPLE IMAGE](SNAPSHOT.png)
