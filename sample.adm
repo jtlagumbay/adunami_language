@@ -4,10 +4,17 @@ sa adm:
   isuwat :: "hey"
   isuwat:: "\'s\' poppin "
   isuwat :: "bitch?\n"
-  isulod::age
   kuptan age
+  isulod::age
   kuptan name = "jhoanna"
-  kuptan year = -3
+  name = "jade"
+  kuptan year = age-3
   kuptan units = 21 - 2
+  isuwat::name
+  isuwat::"\n"
+  kon age mas gamay 18:
+    isuwat::"minor ka. "
+    isuwat::"magdebut naka ig "::18 - age::" ka tuig"
+
 hmn
 
