@@ -278,7 +278,7 @@ void Parser::expectInstruction(){
       {
         string m_var_name = (*curr_token).lexeme;
         expect(VAR_NAME);
-        symbol_table.getSymbol(m_var_name); 
+        symbol_table.resetSymbol(*curr_token,m_var_name);
         expectAssign(m_var_name);
       }
       break;
