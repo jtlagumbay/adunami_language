@@ -1,20 +1,16 @@
 sa adm:
 
   **comment**
-  isuwat :: "hey"
-  isuwat:: "\'s\' poppin "
-  isuwat :: "bitch?\n"
-  kuptan age
-  isulod::age
-  kuptan name = "jhoanna"
-  name = "jade"
-  kuptan year = age-3
-  kuptan units = 21 - 2
-  isuwat::name
-  isuwat::"\n"
-  kon age mas gamay 18:
-    isuwat::"minor ka. "
-    isuwat::"magdebut naka ig "::18 - age::" ka tuig"
+  kuptan pangan = "jhoanna"
+  pangan = "jade"
+  kuptan edad
+  isuwat::"Hi "
+  isuwat::pangan
+  isuwat::"! Unsa imo edad?\n"
+  isulod::edad
+  isuwat::"aw mao ba, unsa may feeling na "
+  isuwat::edad
+  isuwat::" ka anyos naka?"
 
 hmn
 
