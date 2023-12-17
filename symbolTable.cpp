@@ -34,6 +34,7 @@ public:
           ""
         }
   );
+  AsmRegisters giveUnusedRegister();
 };
 
 ostream& operator<<(std::ostream& os, const Symbol& m_symbol) {
@@ -109,7 +110,7 @@ void SymbolTable::editSymbol(Token m_type, string m_var_name, string m_value, As
         "Cannot be user error. Wala na tarong og pasa ang parameter. Ga pasa og data type pero walay value gi pasa.");
   }
 
-  if(!(m_type == CHARACTER || m_type == INTEGER || m_type == DOUBLE || m_type == STRING || m_type == ARITHMETIC_EXPRESSION || m_type == VAR_NAME)){
+  if(!(m_type == CHARACTER || m_type == INTEGER || m_type == DOUBLE || m_type == STRING || m_type == ARITHMETIC_EXPRESSION || m_type == VAR_NAME || m_type == USER_INPUT)){
     throw Error(
         SEMANTIC,
         "Cannot initialize variable \'" + m_var_name + "\'.",
@@ -172,7 +173,27 @@ void SymbolTable::resetSymbol(TokenInfo m_token_info, string m_var_name){
   }
 }
 
+AsmRegisters SymbolTable::giveUnusedRegister(){
+   static vector<AsmRegisters> unusedRegisters = {
+        T0, T1, T2, T3, T4, T5, T6, T7,
+        T8, T9
+    };
 
+    if (unusedRegisters.empty())
+    {
+        // All registers are used, handle this case as needed (throw an exception, return a special value, etc.)
+        // For simplicity, let's return ZERO, but you might want to handle this differently.
+        throw Error(RUNTIME, "No more memory.", "symbolTable.cpp > smRegisters SymbolTable::giveUnusedRegister() > if (unusedRegisters.empty())", "Limitation sa implementation. Nagamit na tanan register");
+    }
+
+    // Get the first unused register
+    AsmRegisters result = unusedRegisters.back();
+
+    // Remove it from the list of unused registers
+    unusedRegisters.pop_back();
+
+    return result;
+}
 
 
 

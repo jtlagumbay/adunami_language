@@ -25,7 +25,8 @@ enum Token {
     IN_OUT_OPERATOR,
     ASSIGN_OPERATOR,
     ARITHMETIC_OPERATOR,
-    LOGICAL_OPERATOR
+    LOGICAL_OPERATOR,
+    USER_INPUT, // Unknown type na variable kay depende sa user
 };
 
 const char* tokenToString(Token t) {
@@ -55,6 +56,7 @@ const char* tokenToString(Token t) {
         case ASSIGN_OPERATOR: return "ASSIGN_OPERATOR";
         case ARITHMETIC_OPERATOR: return "ARITHMETIC_OPERATOR";
         case LOGICAL_OPERATOR: return "LOGICAL_OPERATOR";
+        case USER_INPUT: return "USER_INPUT";
         default: return "tokenToString Error";
     }
 } 

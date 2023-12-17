@@ -6,6 +6,7 @@
 #include "asmInstructions.cpp"
 #include "symbolTable.cpp"
 
+
 using namespace std;
 
 class Parser{
@@ -39,6 +40,14 @@ class Parser{
   void appendLoadWord(AsmRegisters, string);
   void appendLoadAddress(AsmRegisters, string);
   void appendLoadImmediate(AsmRegisters, int);
+  void appendMove(AsmRegisters, AsmRegisters);
+  void appendAdd(AsmRegisters, AsmRegisters, AsmRegisters);
+  void appendAddI(AsmRegisters, AsmRegisters, int);
+  void appendJal(string);
+  void appendBeq(AsmRegisters, int, string);
+  void appendBne(AsmRegisters, int, string);
+  void appendBranchName(string);
+  void appendJump(string);
   void appendSyscall();
   void printInt(TokenInfo, string);
   void printStr(TokenInfo, string);
@@ -75,6 +84,7 @@ int main() {
     m_parser.printSymbolTable(); // comment later on
     m_parser.generateAsm();
     // run asm
+    
     int result = system(asmCommand.c_str());
   } catch (Error& e) {
       cerr << e << endl;
@@ -215,12 +225,22 @@ void Parser::expectInstruction(){
         Symbol m_symbol = symbol_table.getSymbol(m_var_name);
         expect(VAR_NAME);
 
-        if(m_symbol.type == INTEGER)
+        if(m_symbol.type == INTEGER){
           printInt(token, m_symbol.value);
-
-        else if(m_symbol.type == STRING)
+        } else if(m_symbol.type == STRING){
           printStr(token, m_symbol.value);
-        
+        } else if(m_symbol.type == USER_INPUT){
+          string temp_key = m_symbol.var_name + to_string(token.line_number) + to_string(token.token_number);
+
+          appendLoadAddress(A0, m_symbol.var_name);
+          appendMove(S2, A0);
+          appendJal("adm_remove_last_new_line");
+          appendMove(A0, S2);
+          appendLoadImmediate(V0, 4);
+          appendSyscall();
+        } else {
+          throw Error(SEMANTIC, "Variable can only be of type integer or string", "parser.cpp > void Parser::expectInstruction(){ >  case OUTPUT: > if((*curr_token).type==VAR_NAME){ > else", "Most probably uncaught na case.");
+        }
       } else if((*curr_token).type==STRING){
         TokenInfo string_token = *curr_token;
 
@@ -252,11 +272,16 @@ void Parser::expectInstruction(){
       expect(IN_OUT_OPERATOR);
       {
         string m_var_name = (*curr_token).lexeme;
-        Symbol m_symbol = symbol_table.getSymbol(m_var_name, *curr_token);
+        expect(VAR_NAME);
+        symbol_table.editSymbol(USER_INPUT, m_var_name,"", symbol_table.giveUnusedRegister());
+        appendData(SPACE, m_var_name, "128");
+        appendLoadAddress(A0, m_var_name);
+        appendLoadAddress(T9, m_var_name);
+        appendLoadAddress(A1, "128");
+        appendLoadImmediate(V0, 8);
+        appendSyscall();
       }
-      expect(VAR_NAME);
-      appendData(SPACE, (*--curr_token).lexeme, "128");
-      curr_token++;
+
       break;
     case DECLARE:
       {
@@ -399,7 +424,9 @@ void Parser::generateAsm(){
   asm_file_writer
       << "\tli   $v0, 10  \n"
       << "\tsyscall \n\n\n\n"
-      << "adm_check_type:\n\tlbu $s1, 0($a2)\n\tbeq $s1, 10, adm_is_int\n\tblt $s1, 48, adm_is_string\n\tbgt $s1, 57, adm_is_string\n\taddi $a2, $a2, 1\n\tj adm_check_type\n\nadm_is_int:\n\tli $v0, 0\n\tjr $ra\n\nadm_is_string:\n\tli $v0, 1\n\tjr $ra";
+      << "adm_check_type:\n\tlbu $s1, 0($a2)\n\tbeq $s1, 10, adm_is_int\n\tblt $s1, 48, adm_is_string\n\tbgt $s1, 57, adm_is_string\n\taddi $a2, $a2, 1\n\tj adm_check_type\n\nadm_is_int:\n\tli $v0, 0\n\tjr $ra\n\nadm_is_string:\n\tli $v0, 1\n\tjr $ra\n\nadm_remove_last_new_line:\n\tlbu $s1, 0($a0)\n\tbeq $s1, 10, exit_adm_remove_last_new_line\n\taddi $a0, $a0, 1\n\tj adm_remove_last_new_line\n\nexit_adm_remove_last_new_line:\n\tli $t0, 0\n\tsb $t0, 0($a0)\n\tjr $ra\n\n";
+
+  asm_file_writer.close();
 }
 
 void Parser::appendData(AsmDataType data_type, string data_name, string data_value){
@@ -475,4 +502,33 @@ void Parser::printStr(TokenInfo token, string val) {
   appendLoadAddress(A0, to_print_label);
   appendLoadImmediate(V0, 4);
   appendSyscall();
+}
+
+void Parser::appendMove(AsmRegisters dest, AsmRegisters src){
+  asm_file_writer << "\tmove " << asmRegToString(dest) << ", " << asmRegToString(src) << endl;
+}
+
+void Parser::appendAdd(AsmRegisters dest, AsmRegisters src1, AsmRegisters src2){
+  asm_file_writer << "\tadd " << asmRegToString(dest) << ", " << asmRegToString(src1) << ", " << asmRegToString(src2) << endl;
+}
+void Parser::appendAddI(AsmRegisters dest, AsmRegisters src, int immediate){
+  asm_file_writer << "\taddi " << asmRegToString(dest) << ", " << asmRegToString(src) << ", " << to_string(immediate) << endl;
+}
+void Parser::appendJal(string branch){
+  asm_file_writer << "\tjal " + branch <<endl<< endl;
+}
+
+void Parser::appendBeq(AsmRegisters src, int immediate, string branch){
+  asm_file_writer<<"\tbeq "<<asmRegToString(src)<<", "<<to_string(immediate)<<", "<<branch<<endl;
+
+}
+void Parser::appendBne(AsmRegisters src, int immediate, string branch){
+  asm_file_writer<<"\tbnq "<<asmRegToString(src)<<", "<<to_string(immediate)<<", "<<branch<<endl;
+
+}
+void Parser::appendBranchName(string branch){
+  asm_file_writer <<"\n"<< branch << ":" << endl;
+}
+void Parser::appendJump(string branch){
+  asm_file_writer << "\tj "<< branch << endl;
 }
