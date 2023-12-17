@@ -159,6 +159,7 @@ vector<TokenInfo> Scanner::scanLine(const string& inputLine, int depth, int line
   int token_number = 0;
   string expr;
   Token token;
+  string prevExpr;
   stringstream SS(inputLine);
 
   while (getline(SS, expr, ' ')) {
@@ -169,9 +170,22 @@ vector<TokenInfo> Scanner::scanLine(const string& inputLine, int depth, int line
     string temp_expr = expr;
 
     if (expr == "-" && SS.peek() >= '0' && SS.peek() <= '9') {
-      getline(SS, expr);
-      temp_expr += "" + expr;
-      expr = temp_expr;
+       if (!prevExpr.empty() && all_of(prevExpr.begin(), prevExpr.end(), ::isdigit)) {
+        tokens_this_line.push_back(TokenInfo{
+          line_number,
+          ++token_number,
+          depth,
+          ARITHMETIC_OPERATOR,
+          expr
+        });
+
+        continue;
+        
+      } else {
+        getline(SS, expr);
+        temp_expr += "" + expr;
+        expr = temp_expr;
+      }
     }
 
     if (expr.front() == '\"') {
@@ -183,6 +197,8 @@ vector<TokenInfo> Scanner::scanLine(const string& inputLine, int depth, int line
       }
       expr = temp_expr;   
     } 
+
+    prevExpr = expr;
 
     token = checkTokenType(expr);
 
