@@ -73,7 +73,7 @@ int main() {
     m_parser.start();
 
     m_parser.printSymbolTable(); // comment later on
-
+    m_parser.generateAsm();
     // run asm
     int result = system(asmCommand.c_str());
   } catch (Error& e) {
@@ -190,8 +190,6 @@ void Parser::start(){
   }
 
   expect(END);
-  appendLoadImmediate(V0, 10);
-  appendSyscall();
  
 
   return;
@@ -398,7 +396,10 @@ bool Parser::isEndLine(){
 }
 
 void Parser::generateAsm(){
-
+  asm_file_writer
+      << "\tli   $v0, 10  \n"
+      << "\tsyscall \n\n\n\n"
+      << "adm_check_type:\n\tlbu $s1, 0($a2)\n\tbeq $s1, 10, adm_is_int\n\tblt $s1, 48, adm_is_string\n\tbgt $s1, 57, adm_is_string\n\taddi $a2, $a2, 1\n\tj adm_check_type\n\nadm_is_int:\n\tli $v0, 0\n\tjr $ra\n\nadm_is_string:\n\tli $v0, 1\n\tjr $ra";
 }
 
 void Parser::appendData(AsmDataType data_type, string data_name, string data_value){

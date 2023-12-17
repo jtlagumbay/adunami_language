@@ -9,7 +9,6 @@ main:
   li    $v0, 8                # specify read string service
   syscall                     # perform
 
-  li    $v0, 0                 # assume its integer
   move  $a2, $a0
   jal adm_check_type
 
@@ -21,18 +20,26 @@ main:
   syscall               # we are out of here.
 
 adm_check_type:
-  lbu $s1, 0($a2)             # Load the first character from the buffer 
-  beq $s1, 10, adm_print_res      # 10 -> ASCII code for '\n'
+  ########################
+  ##
+  ## THIS IS A HELPER FUNCTION TO DETERMINE IF IT IS INTEGER OR STRING
+  ##
+  ## PARAMETER: $a2 -> address of the variable
+  ## RETURN: $v0 -> 0 if integer, 1 if string.
+  ##
+  ########################
 
-  # Check if the first character is a digit
-  blt $s1, 48, adm_is_string      # 48 -> ASCII code for '0'
-  bgt $s1, 57, adm_is_string      # 57 -> ASCII code for '9'
+  lbu $s1, 0($a2)      
+  beq $s1, 10, adm_is_int 
 
-  # The first character is a digit so iterate
-  addi $a2, $a2, 1            # move to next character
-  j check_type
+  blt $s1, 48, adm_is_string 
+  bgt $s1, 57, adm_is_string 
 
-adm_print_res:              # 1 -> string, 0 -> integer
+  addi $a2, $a2, 1        
+  j adm_check_type
+
+adm_is_int:
+  li $v0, 0
   jr $ra
 
 adm_is_string:
