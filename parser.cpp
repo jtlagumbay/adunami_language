@@ -65,9 +65,9 @@ public:
 };
 
 int main() {
-  string file;
-  cout << "Enter file name (without file extension): ";
-  cin >> file;
+  string file = "sample";
+  // cout << "Enter file name (without file extension): ";
+  // cin >> file;
 
 
   string file_name = file + ".adm"; // file path of the source code
@@ -215,7 +215,9 @@ void Parser::expectInstruction(){
   curr_token = (*curr_line).begin();
   end_token = (*curr_line).end();
   TokenInfo curr_token_info = *curr_token;
- 
+
+
+
   switch(curr_token_info.type){
     case OUTPUT:
       expect(OUTPUT);
@@ -225,8 +227,6 @@ void Parser::expectInstruction(){
         string m_var_name = (*curr_token).lexeme;
         Symbol m_symbol = symbol_table.getSymbol(m_var_name);
         expect(VAR_NAME);
-
-        // cout << "Checking m_symbol.type " << tokenToString(m_symbol.type) << endl;
 
         if(m_symbol.type == INTEGER){
           printInt(token, m_symbol.value);
@@ -241,10 +241,26 @@ void Parser::expectInstruction(){
           appendMove(A0, S2);
           appendLoadImmediate(V0, 4);
           appendSyscall();
+        } else if (m_symbol.type == VAR_NAME){
+
+          Symbol m_var_symbol = symbol_table.getSymbol(m_symbol.value);
+
+          if(m_var_symbol.type==ARITHMETIC_EXPRESSION){
+            int integer_to_print = calculate(m_var_symbol.value);
+            printInt(*--curr_token, to_string(integer_to_print));
+            curr_token++;
+          } else if (m_var_symbol.type==STRING){
+            printStr(*curr_token, m_var_symbol.value);
+          } else if (m_var_symbol.type==INTEGER){
+            printInt(*curr_token, m_var_symbol.value);
+          } else {
+            throw Error(SEMANTIC, "Variable can only be of type integer or string or arithmetic expression", "parser.cpp > void Parser::expectInstruction(){ else if (m_symbol.type == VAR_NAME) ", "Most probably uncaught na case.");
+          }
+
+
         } else if (m_symbol.type == ARITHMETIC_EXPRESSION){
           int result = calculate(m_symbol.value);
           printInt(token, to_string(result));
-          // cout << m_symbol.value << " = " << result << endl;
         } else {
           throw Error(SEMANTIC, "Variable can only be of type integer or string", "parser.cpp > void Parser::expectInstruction(){ >  case OUTPUT: > if((*curr_token).type==VAR_NAME){ > else", "Most probably uncaught na case.");
         }
@@ -362,11 +378,14 @@ void Parser::expectStatement(string m_var_name){
   Symbol m_symbol = symbol_table.getSymbol(m_var_name, *curr_token);
 
   string m_lexeme = (*curr_token).lexeme;
- 
+  string m_symbol_value = m_symbol.value;
+
   switch (m_token.type){
     case VAR_NAME:
-      symbol_table.getSymbol((*curr_token).lexeme, *curr_token);
-      expect(VAR_NAME);
+      {
+        Symbol m_var_symbol = symbol_table.getSymbol((*curr_token).lexeme, *curr_token);
+        expect(VAR_NAME);
+      }
       break;
     case STRING:
       expect(STRING);
@@ -389,10 +408,9 @@ void Parser::expectStatement(string m_var_name){
   }
 
   if(m_symbol.type == UNKNOWN){ // meaning mao pay pag declare sa variable so ang data type sa variable kay ang data type sa sunod na tokem
-  
-    symbol_table.editSymbol(m_token.type, m_var_name, m_symbol.value + m_lexeme);
+    symbol_table.editSymbol(m_token.type, m_var_name, m_symbol_value + m_lexeme);
   } else {
-    symbol_table.editSymbol(m_symbol.type, m_var_name, m_symbol.value + m_lexeme);
+    symbol_table.editSymbol(m_symbol.type, m_var_name, m_symbol_value + m_lexeme);
   }
 
   if(isEnd()){
@@ -471,7 +489,7 @@ void Parser::appendData(AsmDataType data_type, string data_name, string data_val
   temp_file_reader.close();
   asm_file_writer.open(asm_file_name, ios::trunc);
   for (const auto& updatedLine : temp_lines) {
-      asm_file_writer << updatedLine << std::endl;
+      asm_file_writer << updatedLine << endl;
   }
 }
 
@@ -495,7 +513,6 @@ void Parser::appendSyscall(){
 
 void Parser::printInt(TokenInfo token, string val) {
   string int_label = "print_" + to_string(token.line_number) + "_" + to_string(token.token_number);
-
   appendData(WORD, int_label, val);
   appendLoadWord(A0, int_label);
   appendLoadImmediate(V0, 1);
