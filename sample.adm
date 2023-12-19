@@ -1,17 +1,21 @@
 sa adm:
 
   **comment**
-  kuptan pangan = "jhoanna"
-  pangan = "jade"
-  kuptan edad
-  isuwat::"Hi "
-  isuwat::pangan
-  isuwat::"! Unsa imo edad?\n"
-  isulod::edad
-  isuwat::"aw mao ba, unsa may feeling na "
-  isuwat::edad
-  isuwat::" ka anyos naka?"
-  kuptan a = - 3
-  a = 21 -2
+
+  kuptan a = 10 + 3
+  kuptan b = a
+  kuptan c = 8
+  kuptan name
+  isulod::name
+  isuwat::"\n a result = "
+  isuwat::a
+  isuwat::"\n c result = "
+  isuwat::c
+  isuwat::"\n b result = "
+  isuwat::b
+  isuwat::"\n d result = "
+  isuwat::9
+  isuwat::"\n name = "
+  isuwat::name
 hmn
 
