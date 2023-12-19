@@ -66,7 +66,7 @@ public:
 
 int main() {
   string file;
-  cout << "Enter file name (without file extension): ";
+  // cout << "Enter file name (without file extension): ";
   cin >> file;
 
 
