@@ -186,6 +186,84 @@ vector<TokenInfo> Scanner::scanLine(const string& inputLine, int depth, int line
         continue;
     }
 
+    if (expr == "mas" || expr == "labing") {
+      string logical_expr = expr;
+      while (getline(SS, expr, ' ')) {
+        temp_expr += " " + expr;
+        logical_expr += " " + expr;
+        break;
+      }
+
+      tokens_this_line.push_back(TokenInfo{
+        line_number,
+        ++token_number,
+        depth,
+        LOGICAL_EXPRESSION,
+        logical_expr
+      });
+
+      continue;
+    }
+
+    if (isdigit(expr.front()) && expr.back() == ':') {
+      string digit = expr.substr(0, expr.size() - 1);
+      string colon = ":";
+      
+      tokens_this_line.push_back(TokenInfo{
+        line_number,
+        ++token_number,
+        depth,
+        INTEGER,
+        digit
+      });
+
+      tokens_this_line.push_back(TokenInfo{
+        line_number,
+        ++token_number,
+        depth,
+        PUNCTUATION,
+        colon
+      });
+
+      tokens_this_line.push_back(TokenInfo{
+        line_number,
+        ++token_number,
+        depth,
+        IF_STATEMENT,
+        "\t"
+      });
+
+      continue;
+    }
+
+    if (expr == "kondili:") {
+      tokens_this_line.push_back(TokenInfo{
+        line_number,
+        ++token_number,
+        depth,
+        ELSE,
+        "kondili"
+      });
+
+      tokens_this_line.push_back(TokenInfo{
+        line_number,
+        ++token_number,
+        depth,
+        PUNCTUATION,
+        ":"
+      });
+
+      tokens_this_line.push_back(TokenInfo{
+        line_number,
+        ++token_number,
+        depth,
+        ELSE_STATEMENT,
+        "\t"
+      });
+
+      continue;
+    }
+
     if (expr.front() == '\"') {
       while (getline(SS, expr, ' ')) {
         temp_expr += " " + expr;
@@ -225,20 +303,19 @@ Token Scanner::checkTokenType(const string& expr) {
       {regex("^(isuwat)$"), OUTPUT},
       {regex("^(isulod)$"), INPUT},
       {regex("^(kuptan)$"), DECLARE},
-      // { regex("^(sama|mas_dako|mas_gamay|labing_dako|labing_gamay)$"), "logical_ops" },
-      // {regex("^[\\+\\-\\*/]$"), ARITHMETIC_OPERATOR},
+      {regex("^(kon)$"), IF},
+      {regex("^(kondili)$"), ELSE},
+      {regex("^(sama|mas dako|mas gamay|labing dako|labing gamay)$"), LOGICAL_EXPRESSION},      
       {regex("^-?[0-9]+$"), INTEGER},
       {regex("^-?[0-9]+.[0-9]+$"), DOUBLE},
       {regex("^\".*\"$"), STRING},
       {regex("^(=)$"), ASSIGN_OPERATOR},
-      // {regex("^[a-zA-Z0-9]$"), CHARACTER},
-      // { regex("^[a-zA-Z0-9.]+$"), "word" },
-      // { regex("^[a-zA-Z0-9.]+$"), "" },
       {regex("^[a-zA-Z][a-zA-Z0-9]*(_[a-zA-Z0-9]+)*$"), VAR_NAME},
       {regex("^(::)$"), IN_OUT_OPERATOR},
-      // {regex("^(\\(|\\)|:|::|,|.)$"), PUNCTUATION},
       {regex("^(\\+|\\-|\\*|/)$"), ARITHMETIC_OPERATOR},
-
+      {regex("^(\\(|\\)|:|,|.)$"), PUNCTUATION},
+      // {regex("^[a-zA-Z0-9]$"), CHARACTER},
+      // { regex("^[a-zA-Z0-9.]+$"), "word" },
   };
 
 
