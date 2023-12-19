@@ -1,98 +1,104 @@
 #include <iostream>
-#include <regex>
-#include <sstream>
-#include <string>
-#include "errorHandler.hpp"
+#include <queue>
+#include <stack>
+
 using namespace std;
 
-int calculate(string);
+queue<string> q;
 
-// int main (){
-//   cout << calculate("27-4") << endl;
-//   cout << calculate("-28-4") << endl;
-//   cout << calculate("27*4") << endl;
-//   cout << calculate("27+4") << endl;
-//   cout << calculate("-27/0") << endl;
+int leastPrec(string x) {
+    for(int i = x.length() - 1; i >= 0; i--)
+        if(!isdigit(x[i]))
+            if(x[i] == '+' || x[i] == '-')
+                return i;
+    
+    for(int i = x.length() - 1; i >= 0; i--)
+        if(!isdigit(x[i]))
+            return i;
+    
+    return -1;
+}
 
-//   return 0;
-// }
+void postfix(string x) {
+    int pos = leastPrec(x);
+    string prnt;
 
-/***
- * 
- * Calculates Arithmetic operation.
- * Limited to two terms only.
- * 
- * 
- * ***/ 
-int calculate(string expr){
-  int answer, term1, term2;
-  string operation;
-  string m_expr = regex_replace(expr, regex("\\+|\\-|/|\\*"), " $& ");
-
-  istringstream iss(m_expr);
-  string token;
-  getline(iss, token, ' ');
-
-
-  if(token == ""){
-    getline(iss, token, ' ');
-  }
-
-  if(token == "-"){
-    getline(iss, token, ' ');
-    // cout << m_expr << " | "<< token + " pp" << endl;
-    term1 = -(stoi(token));
-    // cout << m_expr << " | "<< term1 + " term1" << endl;
-  }
-  else {
-    // cout << m_expr << " | "<< token + " aa" << endl;
-
-    term1 = stoi(token);
-  }
-
-  if(token == ""){
-    getline(iss, token, ' ');
-  }
-
-  getline(iss, token, ' ');
-  operation = token;
-  
-  if(token == ""){
-    getline(iss, token, ' ');
-  }
-
-
-  getline(iss, token, ' ');
-  // cout << m_expr << " | "<< token + " cc" << endl;
-  term2 = stoi(token);
-
-  if(operation == "-"){
-    answer = term1 - term2;
-  }
-  else if(operation == "+"){
-    answer = term1 + term2;
-  }
-  else if(operation == "*"){
-    answer = term1 * term2;
-  }
-  else if(operation == "/"){
-    if(term2==0){
-      throw Error(
-      RUNTIME,
-      "Cannot divide by zero: "+expr+" Check Adunami supported features.",
-      "simpleCalcular.cpp > calculate > else",
-      "Operations kay dili + - * /"
-       );
+    if(pos >= 0)
+        prnt = x.substr(pos, 1);
+    else {
+        prnt = x;
     }
-    answer = term1 / term2;
-  } else {
-    throw Error(
-      SYNTAX,
-      "Operation not supported: "+expr+" Check Adunami supported features.",
-      "simpleCalcular.cpp > calculate > else",
-      "Operations kay dili + - * /"
-       );
-  }
+    
+    if(pos >= 0) // left
+        postfix(x.substr(0, pos));
 
-  return answer;
+    if(pos < x.length()) // right
+        postfix(x.substr(pos + 1));
+
+    // cout << prnt << " "; // print
+    q.push(prnt);
+}
+
+bool isDigit(string x) {
+    for (char c : x) {
+        if (!isdigit(c)) {
+            return false;
+        }
+    }
+    return true;
+}
+
+string solveArithmetic(string x, string y, string op) {
+    int a = stol(x);
+    int b = stol(y);
+    int answer;
+
+    if(op == "-")
+        answer = a - b;
+
+    else if(op == "+")
+        answer = a + b;
+
+    else if(op == "*")
+        answer = a * b;
+
+    else
+        answer = a / b;
+
+    return to_string( answer );
+}
+
+int solveQ() {
+    string x, y;
+    stack<string> s;
+
+    while(!q.empty()) {
+        if(!isDigit( q.front() )) {
+            y = s.top();
+            s.pop();
+            x = s.top();
+            s.pop();
+
+            s.push( solveArithmetic(x, y, q.front()) );
+        } else
+            s.push( q.front() );
+        
+        q.pop();
+    }
+
+    return stol( s.top() );
+}
+
+string removeSpaces(string expr) {
+    expr.erase(std::remove_if(expr.begin(), expr.end(), ::isspace), expr.end());
+
+    return expr;
+}
+
+int calculate(string expr) {
+    expr = removeSpaces(expr);
+
+    postfix(expr);
+
+    return solveQ();
 }
