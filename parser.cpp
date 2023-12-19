@@ -5,6 +5,7 @@
 #include "scanner.cpp"
 #include "asmInstructions.cpp"
 #include "symbolTable.cpp"
+#include "simpleCalculator.cpp"
 
 
 using namespace std;
@@ -225,6 +226,8 @@ void Parser::expectInstruction(){
         Symbol m_symbol = symbol_table.getSymbol(m_var_name);
         expect(VAR_NAME);
 
+        // cout << "Checking m_symbol.type " << tokenToString(m_symbol.type) << endl;
+
         if(m_symbol.type == INTEGER){
           printInt(token, m_symbol.value);
         } else if(m_symbol.type == STRING){
@@ -238,6 +241,10 @@ void Parser::expectInstruction(){
           appendMove(A0, S2);
           appendLoadImmediate(V0, 4);
           appendSyscall();
+        } else if (m_symbol.type == ARITHMETIC_EXPRESSION){
+          int result = calculate(m_symbol.value);
+          printInt(token, to_string(result));
+          // cout << m_symbol.value << " = " << result << endl;
         } else {
           throw Error(SEMANTIC, "Variable can only be of type integer or string", "parser.cpp > void Parser::expectInstruction(){ >  case OUTPUT: > if((*curr_token).type==VAR_NAME){ > else", "Most probably uncaught na case.");
         }
