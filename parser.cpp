@@ -65,9 +65,9 @@ public:
 };
 
 int main() {
-  string file = "sample";
-  // cout << "Enter file name (without file extension): ";
-  // cin >> file;
+  string file;
+  cout << "Enter file name (without file extension): ";
+  cin >> file;
 
 
   string file_name = file + ".adm"; // file path of the source code
