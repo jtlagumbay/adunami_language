@@ -25,6 +25,7 @@ enum Token {
     IN_OUT_OPERATOR,
     ASSIGN_OPERATOR,
     ARITHMETIC_OPERATOR,
+    USER_ARITHMETIC_EXPRESSION,
     LOGICAL_OPERATOR,
     USER_INPUT, // Unknown type na variable kay depende sa user
 };
@@ -41,6 +42,7 @@ const char* tokenToString(Token t) {
         case IF_STATEMENT: return "IF_STATEMENT";
         case LOGICAL_EXPRESSION: return "LOGICAL_EXPRESSION";
         case ARITHMETIC_EXPRESSION: return "ARITHMETIC_EXPRESSION";
+        case USER_ARITHMETIC_EXPRESSION: return "USER_ARITHMETIC_EXPRESSION";
         case ELSE: return "ELSE";
         case ELSE_STATEMENT: return "ELSE_STATEMENT";
         case ENDL: return "ENDL";

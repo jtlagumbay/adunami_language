@@ -297,13 +297,28 @@ void Parser::expectInstruction(){
       {
         string m_var_name = (*curr_token).lexeme;
         expect(VAR_NAME);
-        symbol_table.editSymbol(USER_INPUT, m_var_name,"", symbol_table.giveUnusedRegister());
+        
+        AsmRegisters m_reg = symbol_table.giveUnusedRegister();
+
+        symbol_table.editSymbol(USER_INPUT, m_var_name,"", m_reg);
+
         appendData(SPACE, m_var_name, "128");
         appendLoadAddress(A0, m_var_name);
-        appendLoadAddress(T9, m_var_name);
+
+        // Saving
+        appendLoadAddress(m_reg, m_var_name);
         appendLoadAddress(A1, "128");
         appendLoadImmediate(V0, 8);
         appendSyscall();
+
+        // Checking if integer
+        appendMove(A2, m_reg);
+        appendAddI(V0, V0, 0); // If Integer or not
+        appendAddI(V1, V1, 0); // Returns the Integer if integer
+        appendJal("adm_check_type");
+        appendMove(m_reg, V1);
+
+        
       }
 
       break;
