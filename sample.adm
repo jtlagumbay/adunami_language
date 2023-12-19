@@ -3,10 +3,8 @@ sa adm:
   **comment**
 
   kuptan a = 10 + 3
-  kuptan b = a
-  kuptan c = 8
-  kuptan name
-  isulod::name
+  kuptan b = 113 - a
+  kuptan c = a*2
   isuwat::"\n a result = "
   isuwat::a
   isuwat::"\n c result = "
@@ -15,7 +13,5 @@ sa adm:
   isuwat::b
   isuwat::"\n d result = "
   isuwat::9
-  isuwat::"\n name = "
-  isuwat::name
 hmn
 

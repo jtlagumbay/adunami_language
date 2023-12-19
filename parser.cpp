@@ -259,6 +259,7 @@ void Parser::expectInstruction(){
 
 
         } else if (m_symbol.type == ARITHMETIC_EXPRESSION){
+          symbol_table.printSymbols();
           int result = calculate(m_symbol.value);
           printInt(token, to_string(result));
         } else {
@@ -378,12 +379,16 @@ void Parser::expectStatement(string m_var_name){
   Symbol m_symbol = symbol_table.getSymbol(m_var_name, *curr_token);
 
   string m_lexeme = (*curr_token).lexeme;
-  string m_symbol_value = m_symbol.value;
+  string m_symbol_value;
 
   switch (m_token.type){
     case VAR_NAME:
       {
+        cout << *curr_token << endl;
         Symbol m_var_symbol = symbol_table.getSymbol((*curr_token).lexeme, *curr_token);
+        int var_value = calculate(m_var_symbol.value);
+        m_lexeme = to_string(var_value);
+
         expect(VAR_NAME);
       }
       break;
@@ -408,9 +413,9 @@ void Parser::expectStatement(string m_var_name){
   }
 
   if(m_symbol.type == UNKNOWN){ // meaning mao pay pag declare sa variable so ang data type sa variable kay ang data type sa sunod na tokem
-    symbol_table.editSymbol(m_token.type, m_var_name, m_symbol_value + m_lexeme);
+    symbol_table.editSymbol(m_token.type, m_var_name, m_symbol.value+m_lexeme);
   } else {
-    symbol_table.editSymbol(m_symbol.type, m_var_name, m_symbol_value + m_lexeme);
+    symbol_table.editSymbol(m_symbol.type, m_var_name, m_symbol.value+m_lexeme);
   }
 
   if(isEnd()){
@@ -431,7 +436,7 @@ void Parser::expectStatement(string m_var_name){
       "Expecting a variable or value on line "+to_string((*curr_token).line_number)+":"+to_string((*--curr_token).token_number+1),
       "parser.cpp > Parser::expectStatement() >  if ((*curr_token).type==ARITHMETIC_OPERATOR)",
       "Either wala na tarong separate ang tokens, or wala na tarong identify ang tokens.");
-    } 
+    }
     expectStatement(m_var_name);
   }
 
